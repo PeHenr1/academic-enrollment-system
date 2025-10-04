@@ -1,0 +1,54 @@
+package br.ifsp.demo.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import org.junit.jupiter.api.Tag;
+
+@Tag("TDD")
+@Retention(RetentionPolicy.RUNTIME)
+@interface TDD {}
+
+@Tag("UnitTest")
+@Retention(RetentionPolicy.RUNTIME)
+@interface UnitTest {}
+
+class CancelEnrollmentServiceTest {
+
+    @Mock
+    private EnrollmentRepository repository;
+
+    private CancelEnrollmentService service;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        service = new CancelEnrollmentService(repository);
+    }
+
+    @TDD
+    @UnitTest
+    @Test
+    @DisplayName("Should Cancel Existing Enrollment")
+    void shouldCancelExistingEnrollment() {
+        Long enrollmentId = 1L;
+        Enrollment enrollment = new Enrollment(enrollmentId);
+
+        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+
+        boolean result = service.cancelEnrollment(enrollmentId);
+
+        assertTrue(result, "Enrollment canceled successfully");
+        verify(repository).findById(enrollmentId);
+    }
+}
