@@ -20,6 +20,7 @@ public class CancelEnrollmentService {
         Enrollment enrollment = repository.findById(id);
 
         if(enrollment == null) { return false; }
+        if(enrollment.isCanceled()) { throw new IllegalStateException("Enrollment Is Already Cancelled"); }
         if (enrollment.getCancellationDeadline().isBefore(LocalDate.now())) { throw new IllegalStateException("Cancellation Deadline has Expired"); }
 
         enrollment.cancel();
