@@ -38,15 +38,15 @@ class CancelEnrollmentServiceTest {
     @DisplayName("Should Cancel Existing Enrollment")
     void shouldCancelExistingEnrollment() {
         Long enrollmentId = 1L;
-        Enrollment enrollment = mock(Enrollment.class);
+        Enrollment enrollment = new Enrollment(enrollmentId);
 
         when(repository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
-        when(enrollment.getCancellationDeadline()).thenReturn(LocalDate.now());
-        when(enrollment.isCanceled()).thenReturn(false);
+        when(repository.save(any(Enrollment.class))).thenReturn(enrollment);
 
         boolean result = service.cancelEnrollment(enrollmentId);
 
         assertTrue(result, "Enrollment canceled successfully");
+        assertTrue(enrollment.isCanceled());
         verify(repository).findById(enrollmentId);
     }
 
