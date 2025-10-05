@@ -140,4 +140,16 @@ class CancelEnrollmentServiceFunctionalTest {
         Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
         assertTrue(updated.isCanceled());
     }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Fail When Enrollment Not Found in Database")
+    void shouldFailWhenEnrollmentNotFoundInDatabase() {
+        Long enrolmentId = 999L;
+
+        boolean result = realService.cancelEnrollment(enrolmentId);
+
+        assertFalse(result);
+    }
 }
