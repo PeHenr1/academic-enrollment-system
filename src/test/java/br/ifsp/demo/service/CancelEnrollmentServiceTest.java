@@ -51,4 +51,19 @@ class CancelEnrollmentServiceTest {
         assertTrue(result, "Enrollment canceled successfully");
         verify(repository).findById(enrollmentId);
     }
+
+    @TDD
+    @UnitTest
+    @Test
+    @DisplayName("Should Fail When Enrollment Does Not Exist")
+    void shouldFailWhenEnrollmentDoesNotExist() {
+        Long enrollmentId = 999L;
+
+        when(repository.findById(enrollmentId)).thenReturn(null);
+
+        boolean result = service.cancelEnrollment(enrollmentId);
+
+        assertFalse(result, "Enrollment was not found");
+        verify(repository).findById(enrollmentId);
+    }
 }
