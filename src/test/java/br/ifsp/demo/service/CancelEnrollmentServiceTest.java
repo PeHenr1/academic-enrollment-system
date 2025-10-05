@@ -1,12 +1,12 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.model.Enrollment;
+import br.ifsp.demo.repository.EnrollmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
