@@ -87,6 +87,7 @@ class EnrollmentQueryServiceTest {
     void shouldReturnMessageWhenNoCourses() {
         Long studentId = 1112L;
 
+        when(repository.existsByStudentId(studentId)).thenReturn(true);
         when(repository.findByStudentId(studentId)).thenReturn(List.of());
 
         Exception exception = assertThrows(
@@ -95,6 +96,8 @@ class EnrollmentQueryServiceTest {
         );
 
         assertEquals("Nenhuma disciplina encontrada para esta matrícula.", exception.getMessage());
+
+        verify(repository, times(1)).existsByStudentId(studentId);
         verify(repository, times(1)).findByStudentId(studentId);
     }
 }
