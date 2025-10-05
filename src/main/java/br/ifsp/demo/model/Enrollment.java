@@ -25,6 +25,10 @@ public class Enrollment {
         this.cancellationDeadline = LocalDate.now().plusDays(3);
     }
 
+    public void setDeadline(LocalDate date){
+        this.cancellationDeadline = date;
+    }
+
     public void cancel() {
         this.canceled = true;
     }

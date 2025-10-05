@@ -176,6 +176,7 @@ class CancelEnrollmentServiceFunctionalTest {
     @DisplayName("Should Fail Cancellation When Deadline Has Expired")
     void shouldFailWhenCancellationWhenDeadlineExpired() {
         Enrollment enrollment = new Enrollment(3L);
+        enrollment.setDeadline(LocalDate.now().minusDays(1));
         jpaRepository.save(enrollment);
 
         assertThatThrownBy(() -> realService.cancelEnrollment(enrollment.getId()))
