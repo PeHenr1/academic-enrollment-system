@@ -64,4 +64,19 @@ class EnrollmentQueryServiceTest {
         assertTrue(found, "Enrollment details should be present");
         verify(repository, times(1)).findByStudentId(studentId);
     }
+
+    @Test
+    @DisplayName("Should Return Message When No Enrollments")
+    void shouldReturnMessageWhenNoEnrollments() {
+        Long studentId = 99999L;
+
+        when(repository.findByStudentId(studentId)).thenReturn(List.of());
+
+        Exception exception = assertThrows(
+                EnrollmentNotFoundException.class,
+                () -> service.getEnrollmentsByStudent(studentId)
+        );
+
+        assertEquals("Matrícula não encontrada ou inativa", exception.getMessage());
+    }
 }
