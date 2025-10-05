@@ -12,19 +12,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Tag;
-
-@Tag("TDD")
-@Retention(RetentionPolicy.RUNTIME)
-@interface TDD {}
-
-@Tag("UnitTest")
-@Retention(RetentionPolicy.RUNTIME)
-@interface UnitTest {}
 
 class CancelEnrollmentServiceTest {
 
@@ -39,8 +29,8 @@ class CancelEnrollmentServiceTest {
         service = new CancelEnrollmentService(repository);
     }
 
-    @TDD
-    @UnitTest
+    @Tag("TDD")
+    @Tag("UnitTest")
     @Test
     @DisplayName("Should Cancel Existing Enrollment")
     void shouldCancelExistingEnrollment() {
@@ -55,8 +45,8 @@ class CancelEnrollmentServiceTest {
         verify(repository).findById(enrollmentId);
     }
 
-    @TDD
-    @UnitTest
+    @Tag("TDD")
+    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail When Enrollment Does Not Exist")
     void shouldFailWhenEnrollmentDoesNotExist() {
@@ -70,8 +60,8 @@ class CancelEnrollmentServiceTest {
         verify(repository).findById(enrollmentId);
     }
 
-    @TDD
-    @UnitTest
+    @Tag("TDD")
+    @Tag("UnitTest")
     @Test
     @DisplayName("Should Throw NullPointerException When Enrollment ID is Null")
     void shouldThrowNullExceptionWhenEnrollmentIdIsNull() {
@@ -81,8 +71,8 @@ class CancelEnrollmentServiceTest {
         verify(repository, never()).findById(any());
     }
 
-    @TDD
-    @UnitTest
+    @Tag("TDD")
+    @Tag("UnitTest")
     @Test
     @DisplayName("Should Reject Cancellation When Deadline Has Expired")
     void shouldRejectCancellationWhenDeadlineHasExpired() {
