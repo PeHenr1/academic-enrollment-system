@@ -1,5 +1,6 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.model.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
 
@@ -14,6 +15,12 @@ public class EnrollmentQueryService {
     }
 
     public List<Enrollment> getEnrollmentsByStudent(Long studentId) {
-        return repository.findByStudentId(studentId);
+        List<Enrollment> enrollments = repository.findByStudentId(studentId);
+
+        if (enrollments.isEmpty()) {
+            throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
+        }
+
+        return enrollments;
     }
 }
