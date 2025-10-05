@@ -169,4 +169,20 @@ class CancelEnrollmentServiceFunctionalTest {
         Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
         assertTrue(updated.isCanceled());
     }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Fail Cancellation When Deadline Has Expired")
+    void shouldFailWhenCancellationWhenDeadlineExpired() {
+        Enrollment enrollment = new Enrollment(3L);
+        jpaRepository.save(enrollment);
+
+        assertThatThrownBy(() -> realService.cancelEnrollment(enrollment.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cancellation Deadline has Expired");
+
+        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        assertFalse(updated.isCanceled());
+    }
 }
