@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
 
@@ -37,7 +38,7 @@ class CancelEnrollmentServiceTest {
         Long enrollmentId = 1L;
         Enrollment enrollment = mock(Enrollment.class);
 
-        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(repository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
         when(enrollment.getCancellationDeadline()).thenReturn(LocalDate.now());
         when(enrollment.isCanceled()).thenReturn(false);
 
@@ -54,7 +55,7 @@ class CancelEnrollmentServiceTest {
     void shouldFailWhenEnrollmentDoesNotExist() {
         Long enrollmentId = 999L;
 
-        when(repository.findById(enrollmentId)).thenReturn(null);
+        when(repository.findById(enrollmentId)).thenReturn(Optional.empty());
 
         boolean result = service.cancelEnrollment(enrollmentId);
 
@@ -81,7 +82,7 @@ class CancelEnrollmentServiceTest {
         Long enrollmentId = 5L;
         Enrollment enrollment = mock(Enrollment.class);
 
-        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(repository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
         when(enrollment.getCancellationDeadline()).thenReturn(LocalDate.now().minusDays(1));
 
         assertThatThrownBy(() -> service.cancelEnrollment(enrollmentId))
@@ -98,7 +99,7 @@ class CancelEnrollmentServiceTest {
         Long enrollmentId = 10L;
         Enrollment enrollment = mock(Enrollment.class);
 
-        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(repository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
         when(enrollment.isCanceled()).thenReturn(true);
 
         assertThatThrownBy(() -> service.cancelEnrollment(enrollmentId))
