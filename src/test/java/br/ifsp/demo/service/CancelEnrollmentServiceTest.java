@@ -14,6 +14,8 @@ import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Tag;
 
 @Tag("TDD")
@@ -75,7 +77,24 @@ class CancelEnrollmentServiceTest {
     void shouldThrowNullExceptionWhenEnrollmentIdIsNull() {
         assertThatThrownBy(() -> service.cancelEnrollment(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("ID cannot be null");
+                .hasMessage("ID cannot be null");
         verify(repository, never()).findById(any());
+    }
+
+    @TDD
+    @UnitTest
+    @Test
+    @DisplayName("Should Reject Cancellation When Deadline Has Expired")
+    void shouldRejectCancellationWhenDeadlineHasExpired() {
+        Long enrollmentId = 5L;
+        Enrollment enrollment = mock(Enrollment.class);
+
+        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(enrollment.getCancellationDeadline()).thenReturn(LocalDate.now().minusDays(1));
+
+        assertThatThrownBy(() -> service.cancelEnrollment(enrollmentId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cancellation Deadline has Expired");
+        verify(repository).findById(enrollmentId);
     }
 }
