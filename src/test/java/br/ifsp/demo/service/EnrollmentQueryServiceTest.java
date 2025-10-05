@@ -1,6 +1,7 @@
 package br.ifsp.demo.service;
 
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
+import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.model.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,5 +80,21 @@ class EnrollmentQueryServiceTest {
         );
 
         assertEquals("Matrícula não encontrada ou inativa", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should Return Message When No Courses")
+    void shouldReturnMessageWhenNoCourses() {
+        Long studentId = 1112L;
+
+        when(repository.findByStudentId(studentId)).thenReturn(List.of());
+
+        Exception exception = assertThrows(
+                NoCoursesFoundException.class,
+                () -> service.getEnrollmentsByStudent(studentId)
+        );
+
+        assertEquals("Nenhuma disciplina encontrada para esta matrícula.", exception.getMessage());
+        verify(repository, times(1)).findByStudentId(studentId);
     }
 }
