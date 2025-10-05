@@ -152,4 +152,21 @@ class CancelEnrollmentServiceFunctionalTest {
 
         assertFalse(result);
     }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Throw Exception When Enrollment Already Cancelled")
+    void shouldThrowExceptionWhenAlreadyCancelled() {
+        Enrollment enrollment = new Enrollment(2L);
+        enrollment.cancel();
+        jpaRepository.save(enrollment);
+
+        assertThatThrownBy(() -> realService.cancelEnrollment((enrollment.getId())))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Enrollment Is Already Cancelled");
+
+        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        assertTrue(updated.isCanceled());
+    }
 }
