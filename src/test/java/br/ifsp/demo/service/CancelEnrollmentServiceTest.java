@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 class CancelEnrollmentServiceTest {
 
@@ -107,5 +109,35 @@ class CancelEnrollmentServiceTest {
                 .hasMessage("Enrollment Is Already Cancelled");
 
         verify(repository).findById(enrollmentId);
+    }
+}
+
+@SpringBootTest
+class CancelEnrollmentServiceFunctionalTest {
+
+    @Autowired
+    private EnrollmentRepository jpaRepository;
+
+    @Autowired
+    private CancelEnrollmentService realService;
+
+    @BeforeEach
+    void setupFunctional() {
+        jpaRepository.deleteAll();
+    }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Persist Cancellation in Database")
+    void shouldPersistCancellationInDatabase() {
+        Enrollment enrollment = new Enrollment(1L);
+        jpaRepository.save(enrollment);
+
+        boolean result = realService.cancelEnrollment(enrollment.getId());
+
+        assertTrue(result);
+        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        assertTrue(updated.isCanceled());
     }
 }
