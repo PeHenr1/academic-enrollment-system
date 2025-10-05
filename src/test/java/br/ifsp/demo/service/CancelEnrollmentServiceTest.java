@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -65,5 +66,16 @@ class CancelEnrollmentServiceTest {
 
         assertFalse(result, "Enrollment was not found");
         verify(repository).findById(enrollmentId);
+    }
+
+    @TDD
+    @UnitTest
+    @Test
+    @DisplayName("Should Throw NullPointerException When Enrollment ID is Null")
+    void shouldThrowNullExceptionWhenEnrollmentIdIsNull() {
+        assertThatThrownBy(() -> service.cancelEnrollment(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("ID cannot be null");
+        verify(repository, never()).findById(any());
     }
 }
