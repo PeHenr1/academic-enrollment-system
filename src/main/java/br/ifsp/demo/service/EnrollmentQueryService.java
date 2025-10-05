@@ -1,6 +1,7 @@
 package br.ifsp.demo.service;
 
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
+import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.model.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
 
@@ -15,11 +16,13 @@ public class EnrollmentQueryService {
     }
 
     public List<Enrollment> getEnrollmentsByStudent(Long studentId) {
+        boolean studentExists = repository.existsByStudentId(studentId);
+
+        if (!studentExists) throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
+
         List<Enrollment> enrollments = repository.findByStudentId(studentId);
 
-        if (enrollments.isEmpty()) {
-            throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
-        }
+        if (enrollments.isEmpty()) throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
 
         return enrollments;
     }
