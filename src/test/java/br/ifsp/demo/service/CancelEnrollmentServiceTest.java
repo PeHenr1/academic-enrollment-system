@@ -35,9 +35,11 @@ class CancelEnrollmentServiceTest {
     @DisplayName("Should Cancel Existing Enrollment")
     void shouldCancelExistingEnrollment() {
         Long enrollmentId = 1L;
-        Enrollment enrollment = new Enrollment(enrollmentId);
+        Enrollment enrollment = mock(Enrollment.class);
 
         when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(enrollment.getCancellationDeadline()).thenReturn(LocalDate.now());
+        when(enrollment.isCanceled()).thenReturn(false);
 
         boolean result = service.cancelEnrollment(enrollmentId);
 
@@ -85,6 +87,24 @@ class CancelEnrollmentServiceTest {
         assertThatThrownBy(() -> service.cancelEnrollment(enrollmentId))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Cancellation Deadline has Expired");
+        verify(repository).findById(enrollmentId);
+    }
+
+    @Tag("TDD")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Fail Cancellation When Enrollment Is Already Canceled")
+    void shouldFailCancellationWhenEnrollmentIsAlreadyCanceled() {
+        Long enrollmentId = 10L;
+        Enrollment enrollment = mock(Enrollment.class);
+
+        when(repository.findById(enrollmentId)).thenReturn(enrollment);
+        when(enrollment.isCanceled()).thenReturn(true);
+
+        assertThatThrownBy(() -> service.cancelEnrollment(enrollmentId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Enrollment Is Already Cancelled");
+
         verify(repository).findById(enrollmentId);
     }
 }

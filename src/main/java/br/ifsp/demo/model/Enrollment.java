@@ -7,7 +7,6 @@ import java.time.LocalDate;
 public class Enrollment {
 
     private Long id;
-    private boolean canceled = false;
 
     public Enrollment(Long id) {
         this.id = id;
@@ -21,4 +20,6 @@ public class Enrollment {
     @Getter
     private LocalDate cancellationDeadline;
 
+    @Getter
+    private boolean canceled = false;
 }
