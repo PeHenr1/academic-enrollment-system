@@ -12,11 +12,12 @@ public class CancelEnrollmentService {
     }
 
     public boolean cancelEnrollment(Long id) {
+
+        if (id == null) { throw new NullPointerException("ID cannot be null"); }
+
         Enrollment enrollment = repository.findById(id);
 
-        if(enrollment == null) {
-            return false;
-        }
+        if(enrollment == null) { return false; }
 
         enrollment.cancel();
         repository.save(enrollment);
