@@ -76,8 +76,8 @@ class CancelEnrollmentServiceTest {
     @Tag("TDD")
     @Tag("UnitTest")
     @Test
-    @DisplayName("Should Reject Cancellation When Deadline Has Expired")
-    void shouldRejectCancellationWhenDeadlineHasExpired() {
+    @DisplayName("Should Fail Cancellation When Deadline Has Expired")
+    void shouldFailCancellationWhenDeadlineHasExpired() {
         Long enrollmentId = 5L;
         Enrollment enrollment = mock(Enrollment.class);
 
