@@ -186,4 +186,14 @@ class CancelEnrollmentServiceFunctionalTest {
         Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
         assertFalse(updated.isCanceled());
     }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Throw Exception When ID is Null")
+    void shouldThrowExceptionWhenIdIsNull() {
+        assertThatThrownBy(() -> realService.cancelEnrollment(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("ID cannot be null");
+    }
 }
