@@ -2,9 +2,7 @@ package br.ifsp.demo.service;
 
 import br.ifsp.demo.model.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -15,7 +13,6 @@ import static org.mockito.Mockito.*;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -113,6 +110,7 @@ class CancelEnrollmentServiceTest {
 }
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CancelEnrollmentServiceFunctionalTest {
 
     @Autowired
@@ -120,6 +118,11 @@ class CancelEnrollmentServiceFunctionalTest {
 
     @Autowired
     private CancelEnrollmentService realService;
+
+    @AfterAll
+    void clearDatabase() {
+        jpaRepository.deleteAll();
+    }
 
     @BeforeEach
     void setupFunctional() {
