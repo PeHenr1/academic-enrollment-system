@@ -2,15 +2,14 @@ package br.ifsp.demo.service;
 
 import br.ifsp.demo.model.Course;
 import br.ifsp.demo.repository.CourseRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -118,5 +117,40 @@ class CourseQueryServiceTest {
         List<Course> result = service.getCoursesByFilter("BES", "Diurno");
 
         assertTrue(result.isEmpty(), "Expected empty list when no course matches filters");
+    }
+}
+
+@SpringBootTest
+class CourseQueryServiceFunctionalTest {
+
+    @Autowired
+    private CourseRepository jpaRepository;
+
+    @Autowired
+    private CourseQueryService realService;
+
+    @AfterAll
+    static void clearDatabase() {
+        jpaRepository.deleteAll();
+    }
+
+    @BeforeEach
+    void setupFunctional() {
+        jpaRepository.deleteAll();
+    }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Return All Offered Courses")
+    void shouldReturnAllOfferedCourses() {
+
+        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+
+        jpaRepository.save(course1);
+
+        List<Course> result = realService.getCourses();
+
+        assertEquals("ADS101", result.getFirst().getCode());
     }
 }
