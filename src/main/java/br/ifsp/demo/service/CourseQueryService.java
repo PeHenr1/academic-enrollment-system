@@ -16,6 +16,8 @@ public class CourseQueryService {
     public List<Course> getCourses() {
         List<Course> courses = repository.findCourses();
 
+        if (courses == null) { throw new IllegalStateException("Failed to load offered courses"); }
+
         return courses.stream().toList();
     }
 }
