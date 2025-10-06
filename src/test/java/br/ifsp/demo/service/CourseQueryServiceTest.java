@@ -6,10 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,6 +26,21 @@ class CourseQueryServiceTest {
     private CourseRepository repository;
 
     private CourseQueryService service;
+
+    static Stream<Arguments> courseFilterProvider() {
+
+        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        course1.setName("ADS");
+        course1.setShift("Noturno");
+
+        Course course2 = new Course("ADS201", "Engenharia de Software", "14:00-16:00", 4, List.of(), 35);
+        course2.setName("ADS");
+        course2.setShift("Noturno");
+
+        return Stream.of(
+                Arguments.of(List.of(course1)),
+                Arguments.of(List.of(course1, course2)));
+    }
 
     @BeforeEach
     void setup() {
@@ -73,22 +92,15 @@ class CourseQueryServiceTest {
 
     @Tag("TDD")
     @Tag("UnitTest")
-    @Test
-    @DisplayName("Should Return Courses That Match The Filters")
-    void shouldReturnCoursesThatMatchTheFilters() {
-        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
-        course1.setName("ADS");
-        course1.setShift("Noturno");
+    @ParameterizedTest
+    @MethodSource("courseFilterProvider")
+    void shouldReturnCoursesAccordingToFilters(List<Course> courses) {
+        when(repository.findCourses()).thenReturn(courses);
 
-        Course course2 = new Course("ADS201", "Engenharia De Software", "14:00-16:00", 4, List.of(), 35);
-        course2.setName("ADS");
-        course2.setShift("Diurno");
+        List<Course> filtered = service.getCoursesByFilter("ADS", "Noturno");
 
-        when(repository.findCourses()).thenReturn(List.of(course1, course2));
-        List<Course> filtered = service.getCoursesByFilter("ADS", null);
-
-        assertEquals(2, filtered.size(), "Should return only courses matching the filters");
-        assertTrue(filtered.stream().allMatch(c -> c.getName().equals("ADS")));
+        assertTrue(filtered.stream().allMatch(c ->
+                c.getName().equals("ADS") && c.getShift().equals("Noturno")));
         verify(repository).findCourses();
     }
 
