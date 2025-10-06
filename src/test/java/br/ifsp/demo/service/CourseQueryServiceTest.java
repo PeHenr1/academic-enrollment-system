@@ -1,5 +1,7 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.model.Course;
+import br.ifsp.demo.repository.CourseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -38,7 +40,7 @@ class CourseQueryServiceTest {
         List<Course> result = service.getCourses();
 
         assertEquals(2, result.size());
-        assertEquals("CS101", result.get(0).getCode());
+        assertEquals("CS101", result.getFirst().getCode());
         verify(repository).findCourses();
     }
 }
