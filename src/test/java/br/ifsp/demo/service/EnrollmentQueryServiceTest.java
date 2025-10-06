@@ -100,4 +100,33 @@ class EnrollmentQueryServiceTest {
         verify(repository).existsByStudentId(studentId);
         verify(repository, never()).findByStudentId(anyLong());
     }
+
+    @Test
+    @Tag("FunctionalTest")
+    @DisplayName("Should Return Real Enrollment Data")
+    void functionalShouldReturnRealEnrollmentData() {
+        EnrollmentRepository realRepository = new EnrollmentRepository() {
+            @Override
+            public boolean existsByStudentId(Long studentId) {
+                return studentId.equals(12345L);
+            }
+
+            @Override
+            public List<Enrollment> findByStudentId(Long studentId) {
+                if (studentId.equals(12345L)) {
+                    return List.of(
+                            new Enrollment("Math", "08:00-10:00", 4, 30),
+                            new Enrollment("Physics", "10:00-12:00", 3, 25)
+                    );
+                }
+                return List.of();
+            }
+        };
+
+        EnrollmentQueryService realService = new EnrollmentQueryService(realRepository);
+        List<Enrollment> enrollments = realService.getEnrollmentsByStudent(12345L);
+
+        assertEquals(2, enrollments.size());
+        assertEquals("Math", enrollments.getFirst().getCourseName());
+    }
 }
