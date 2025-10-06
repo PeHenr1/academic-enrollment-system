@@ -16,8 +16,19 @@ public class CourseQueryService {
     public List<Course> getCourses() {
         List<Course> courses = repository.findCourses();
 
-        if (courses == null) { throw new IllegalStateException("Failed to load offered courses"); }
+        if (courses == null) {
+            throw new IllegalStateException("Failed to load offered courses");
+        }
 
         return courses.stream().toList();
+    }
+
+    public List<Course> getCoursesByFilter(String courseName, String shift) {
+        List<Course> allCourses = getCourses();
+
+        return allCourses.stream()
+                .filter(c -> courseName == null || courseName.equalsIgnoreCase(c.getName()))
+                .filter(c -> shift == null || shift.equalsIgnoreCase(c.getShift()))
+                .toList();
     }
 }

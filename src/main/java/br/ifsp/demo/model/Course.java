@@ -1,16 +1,21 @@
 package br.ifsp.demo.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
 public class Course {
 
     private Long id;
+    private String code;
     private String name;
     private String schedule;
     private int credits;
     private int availableSeats;
+    private String shift;
     private List<String> prerequisites;
 
     public Course(String code, String name, String schedule, int credits, List<String> prerequisites, int availableSeats) {
@@ -21,8 +26,4 @@ public class Course {
         this.prerequisites = prerequisites;
         this.availableSeats = availableSeats;
     }
-
-    @Getter
-    private String code;
-
 }
