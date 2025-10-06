@@ -29,32 +29,25 @@ class EnrollmentQueryServiceTest {
         service = new EnrollmentQueryService(repository);
     }
 
-    @Test
-    @DisplayName("Should Return Enrollments For Student")
-    void shouldReturnEnrollmentsForStudent() {
-        Long studentId = 12345L;
-
-        when(repository.findByStudentId(studentId)).thenReturn(List.of(
-                new Enrollment("Math", "08:00-10:00", 4, 30)
-        ));
-
-        List<Enrollment> enrollments = service.getEnrollmentsByStudent(studentId);
-        assertNotNull(enrollments);
-        verify(repository, times(1)).findByStudentId(studentId);
-    }
-
-    @ParameterizedTest
+    @ParameterizedTest(name = "Should Return Enrollment Details")
     @CsvSource({
             "12345,Math,08:00-10:00,4,30",
             "12345,Physics,10:00-12:00,3,25"
     })
-    void shouldContainEnrollmentDetails(Long studentId, String courseName, String schedule, int credits, int vacancies) {
+    @Tag("UnitTest")
+    @Tag("TDD")
+    @DisplayName("Should Return Enrollment Details When Student Has Active Courses")
+    void shouldReturnEnrollmentDetailsWhenStudentHasActiveCourses(Long studentId, String courseName, String schedule, int credits, int vacancies) {
+        when(repository.existsByStudentId(studentId)).thenReturn(true);
         when(repository.findByStudentId(studentId)).thenReturn(List.of(
                 new Enrollment("Math", "08:00-10:00", 4, 30),
                 new Enrollment("Physics", "10:00-12:00", 3, 25)
         ));
 
         List<Enrollment> enrollments = service.getEnrollmentsByStudent(studentId);
+
+        assertNotNull(enrollments);
+        assertFalse(enrollments.isEmpty(), "Enrollments list should not be empty");
 
         boolean found = enrollments.stream().anyMatch(e ->
                 e.getCourseName().equals(courseName) &&
@@ -63,41 +56,48 @@ class EnrollmentQueryServiceTest {
                         e.getVacancies() == vacancies
         );
 
-        assertTrue(found, "Enrollment details should be present");
-        verify(repository, times(1)).findByStudentId(studentId);
+        assertTrue(found, "Expected enrollment details were not found");
+
+        verify(repository).existsByStudentId(studentId);
+        verify(repository).findByStudentId(studentId);
     }
 
     @Test
-    @DisplayName("Should Return Message When No Enrollments")
-    void shouldReturnMessageWhenNoEnrollments() {
-        Long studentId = 99999L;
-
-        when(repository.findByStudentId(studentId)).thenReturn(List.of());
-
-        Exception exception = assertThrows(
-                EnrollmentNotFoundException.class,
-                () -> service.getEnrollmentsByStudent(studentId)
-        );
-
-        assertEquals("Matrícula não encontrada ou inativa", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Should Return Message When No Courses")
-    void shouldReturnMessageWhenNoCourses() {
+    @Tag("UnitTest")
+    @Tag("TDD")
+    @DisplayName("Should Throw NoCoursesFoundException When Student Has Enrollment But No Courses")
+    void shouldThrowNoCoursesFoundExceptionWhenStudentHasEnrollmentButNoCourses() {
         Long studentId = 1112L;
-
         when(repository.existsByStudentId(studentId)).thenReturn(true);
         when(repository.findByStudentId(studentId)).thenReturn(List.of());
 
-        Exception exception = assertThrows(
+        NoCoursesFoundException exception = assertThrows(
                 NoCoursesFoundException.class,
                 () -> service.getEnrollmentsByStudent(studentId)
         );
 
         assertEquals("Nenhuma disciplina encontrada para esta matrícula.", exception.getMessage());
 
-        verify(repository, times(1)).existsByStudentId(studentId);
-        verify(repository, times(1)).findByStudentId(studentId);
+        verify(repository).existsByStudentId(studentId);
+        verify(repository).findByStudentId(studentId);
+    }
+
+    @Test
+    @Tag("UnitTest")
+    @Tag("TDD")
+    @DisplayName("Should Throw EnrollmentNotFoundException When StudentHas No Active Enrollment")
+    void shouldThrowEnrollmentNotFoundExceptionWhenStudentHasNoActiveEnrollment() {
+        Long studentId = 99999L;
+        when(repository.existsByStudentId(studentId)).thenReturn(false);
+
+        EnrollmentNotFoundException exception = assertThrows(
+                EnrollmentNotFoundException.class,
+                () -> service.getEnrollmentsByStudent(studentId)
+        );
+
+        assertEquals("Matrícula não encontrada ou inativa", exception.getMessage());
+
+        verify(repository).existsByStudentId(studentId);
+        verify(repository, never()).findByStudentId(anyLong());
     }
 }
