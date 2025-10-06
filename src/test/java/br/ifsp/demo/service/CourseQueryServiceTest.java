@@ -154,4 +154,14 @@ class CourseQueryServiceFunctionalTest {
 
         assertEquals("ADS101", result.getFirst().getCode());
     }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Return Empty List When No Courses")
+    void shouldReturnEmptyListWhenNoCourses() {
+        List<Course> result = realService.getCourses();
+
+        assertTrue(result.isEmpty(), "Empty List When There's No Courses On DB");
+    }
 }
