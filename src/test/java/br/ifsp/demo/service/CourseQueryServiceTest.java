@@ -52,14 +52,15 @@ class CourseQueryServiceTest {
     @Test
     @DisplayName("Should Return All Offered Courses For The Semester")
     void shouldReturnAllOfferedCoursesForTheSemester() {
-        Course course1 = new Course("CS101", "Algorithms", "08:00-10:00", 4, List.of(), 40);
-        Course course2 = new Course("CS102", "Databases", "10:00-12:00", 4, List.of("CS101"), 30);
+        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        Course course2 = new Course("ADS201", "Engenharia de Software", "14:00-16:00", 4, List.of(), 35);
+
         when(repository.findCourses()).thenReturn(List.of(course1, course2));
 
         List<Course> result = service.getCourses();
 
         assertEquals(2, result.size());
-        assertEquals("CS101", result.getFirst().getCode());
+        assertEquals("ADS101", result.getFirst().getCode());
         verify(repository).findCourses();
     }
 
