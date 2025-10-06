@@ -2,6 +2,7 @@ package br.ifsp.demo.service;
 
 import br.ifsp.demo.model.Course;
 import br.ifsp.demo.repository.CourseRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -163,5 +165,28 @@ class CourseQueryServiceFunctionalTest {
         List<Course> result = realService.getCourses();
 
         assertTrue(result.isEmpty(), "Empty List When There's No Courses On DB");
+    }
+
+    @Tag("Functional")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Filter Courses")
+    void shouldFilterCourses() {
+
+        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        course1.setName("ADS");
+        course1.setShift("Noturno");
+
+        Course course2 = new Course("ADS201", "Engenharia de Software", "14:00-16:00", 4, List.of(), 35);
+        course2.setName("ADS");
+        course2.setShift("Noturno");
+
+        jpaRepository.save(course1);
+        jpaRepository.save(course2);
+
+        List<Course> filtered = realService.getCoursesByFilter("ADS", "Noturno");
+
+        assertTrue(filtered.stream().allMatch(c ->
+                c.getName().equals("ADS") && c.getShift().equals("Noturno")));
     }
 }
