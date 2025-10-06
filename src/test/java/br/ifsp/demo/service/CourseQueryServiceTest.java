@@ -91,4 +91,20 @@ class CourseQueryServiceTest {
         assertTrue(filtered.stream().allMatch(c -> c.getName().equals("ADS")));
         verify(repository).findCourses();
     }
+
+    @Tag("TDD")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Return Empty List When No Course Matches Filter")
+    void shouldReturnEmptyListWhenNoCourseMatchesFilter() {
+        Course course1 = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        course1.setName("ADS");
+        course1.setShift("Noturno");
+
+        when(repository.findCourses()).thenReturn(List.of(course1));
+
+        List<Course> result = service.getCoursesByFilter("BES", "Diurno");
+
+        assertTrue(result.isEmpty(), "Expected empty list when no course matches filters");
+    }
 }
