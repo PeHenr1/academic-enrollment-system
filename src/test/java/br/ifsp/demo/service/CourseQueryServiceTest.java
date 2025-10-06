@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,19 @@ class CourseQueryServiceTest {
         List<Course> result = service.getCourses();
 
         assertTrue(result.isEmpty(), "Expected empty course list");
+        verify(repository).findCourses();
+    }
+
+    @Tag("TDD")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Throw Exception When Repository Returns Null")
+    void shouldThrowExceptionWhenRepositoryReturnsNull() {
+        when(repository.findCourses()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.getCourses())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Failed to load offered courses");
         verify(repository).findCourses();
     }
 }
