@@ -121,6 +121,7 @@ class CourseQueryServiceTest {
 }
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CourseQueryServiceFunctionalTest {
 
     @Autowired
@@ -130,7 +131,7 @@ class CourseQueryServiceFunctionalTest {
     private CourseQueryService realService;
 
     @AfterAll
-    static void clearDatabase() {
+    void clearDatabase() {
         jpaRepository.deleteAll();
     }
 
