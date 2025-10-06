@@ -43,4 +43,17 @@ class CourseQueryServiceTest {
         assertEquals("CS101", result.getFirst().getCode());
         verify(repository).findCourses();
     }
+
+    @Tag("TDD")
+    @Tag("UnitTest")
+    @Test
+    @DisplayName("Should Return Empty List When No Courses Offered")
+    void shouldReturnEmptyListWhenNoCoursesOffered() {
+        when(repository.findCourses()).thenReturn(List.of());
+
+        List<Course> result = service.getCourses();
+
+        assertTrue(result.isEmpty(), "Expected empty course list");
+        verify(repository).findCourses();
+    }
 }
