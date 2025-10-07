@@ -2,32 +2,34 @@ package br.ifsp.demo.service;
 
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
-import br.ifsp.demo.model.Enrollment;
+import br.ifsp.demo.model.Course;
+import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class EnrollmentQueryService {
 
-    private final EnrollmentRepository repository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
 
-    public EnrollmentQueryService(EnrollmentRepository repository) {
-        this.repository = repository;
+    public EnrollmentQueryService(EnrollmentRepository enrollmentRepository, CourseRepository courseRepository) {
+        this.enrollmentRepository = enrollmentRepository;
+        this.courseRepository = courseRepository;
     }
 
-    public Optional<Enrollment> getEnrollmentsByStudent(Long id) {
-        boolean studentExists = repository.existsById(id);
-        if (!studentExists) {
+    public List<Course> getCoursesByEnrollment(Long enrollmentId) {
+        if (!enrollmentRepository.existsById(enrollmentId)) {
             throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
         }
 
-        Optional<Enrollment> enrollments = repository.findById(id);
-        if (enrollments.isEmpty() || enrollments.get().getCourseName() == null) {
+        List<Course> courses = courseRepository.findByEnrollmentId(enrollmentId);
+        if (courses.isEmpty()) {
             throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
         }
 
-        return enrollments;
+        return courses;
     }
 }
