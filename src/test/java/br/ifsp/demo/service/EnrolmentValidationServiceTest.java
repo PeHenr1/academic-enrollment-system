@@ -1,0 +1,51 @@
+package br.ifsp.demo.service;
+
+import br.ifsp.demo.model.Course;
+import br.ifsp.demo.repository.CourseRepository;
+import br.ifsp.demo.repository.EnrollmentRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+
+@Tag("TDD")
+@Tag("UnitTest")
+class EnrollmentValidationServiceTest {
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
+
+    private EnrollmentValidationService service;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        service = new EnrollmentValidationService(courseRepository, enrollmentRepository);
+    }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When Course Code Is Missing")
+    void shouldRejectEnrollmentWhenCourseCodeIsMissing() {
+        Course invalidCourse = new Course(null, "Programação I", "08:00-10:00", 4, List.of(), 40);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(invalidCourse));
+
+        assertThatThrownBy(() -> service.enrollStudent(1L, 123L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Course With Chosen Code Not Found");
+
+        verify(courseRepository).findById(1L);
+    }
+}
