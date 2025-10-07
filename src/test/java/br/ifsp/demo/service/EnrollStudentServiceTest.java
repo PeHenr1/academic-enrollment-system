@@ -65,4 +65,14 @@ class EnrollStudentServiceTest {
                 .hasMessageContaining("Missing prerequisite");
     }
 
+    @Test
+    void shouldThrowExceptionWhenCourseAlreadyCompleted() {
+        student.setCompletedCourses(List.of("IFSP101"));
+        when(courseRepository.findByCode("IFSP101")).thenReturn(Optional.of(offeredCourse));
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of("IFSP101")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Course already completed");
+    }
+
 }
