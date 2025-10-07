@@ -126,4 +126,15 @@ class EnrollmentValidationServiceFunctionalTest {
         assertThat(enrollmentRepository.findAll()).hasSize(1);
         assertThat(enrollmentRepository.findAll().getFirst().isCanceled()).isFalse();
     }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When No Seats Are Available")
+    void shouldRejectEnrollmentWhenNoSeatsAreAvailable() {
+        Course fullCourse = new Course("ENG301", "Cálculo III", "14:00-16:00", 4, List.of(), 0);
+        courseRepository.save(fullCourse);
+
+        assertThatThrownBy(() -> realService.enrollStudent(fullCourse.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No More Available Seats for This Courses");
+    }
 }
