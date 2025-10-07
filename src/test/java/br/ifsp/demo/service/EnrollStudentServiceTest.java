@@ -75,4 +75,15 @@ class EnrollStudentServiceTest {
                 .hasMessageContaining("Course already completed");
     }
 
+    @Test
+    void shouldThrowExceptionWhenExceedingMaxCredits() {
+        offeredCourse = new OfferedCourse("IFSP101", "Software Engineering", 10);
+        when(courseRepository.findByCode("IFSP101")).thenReturn(Optional.of(offeredCourse));
+        when(enrollmentRepository.calculateTotalCredits(student.getId(), offeredCourse.getTerm())).thenReturn(15);
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of("IFSP101")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Maximum of 20 credits exceeded");
+    }
+
 }
