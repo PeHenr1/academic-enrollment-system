@@ -124,4 +124,13 @@ class EnrollmentQueryServiceFunctionalTest {
                 .isInstanceOf(NoCoursesFoundException.class)
                 .hasMessage("Nenhuma disciplina encontrada para esta matrícula.");
     }
+
+    @Test
+    @Tag("Functional")
+    @DisplayName("Functional: Should Throw EnrollmentNotFoundException When Student Has No Enrollment")
+    void shouldThrowEnrollmentNotFoundExceptionWhenStudentHasNoEnrollment() {
+        assertThatThrownBy(() -> realService.getEnrollmentsByStudent(999L))
+                .isInstanceOf(EnrollmentNotFoundException.class)
+                .hasMessage("Matrícula não encontrada ou inativa");
+    }
 }
