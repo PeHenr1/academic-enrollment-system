@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
@@ -90,5 +90,34 @@ class EnrollmentQueryServiceTest {
 
         verify(repository).existsByStudentId(studentId);
         verify(repository, never()).findById(anyLong());
+    }
+}
+
+@SpringBootTest
+class EnrollmentQueryServiceFunctionalTest {
+
+    @Autowired
+    private EnrollmentRepository jpaRepository;
+
+    @Autowired
+    private EnrollmentQueryService realService;
+
+    @BeforeEach
+    void setupFunctional() {
+        jpaRepository.deleteAll();
+    }
+
+    @Test
+    @Tag("Functional")
+    @DisplayName("Functional: Should Return Enrollment for Active Student")
+    void shouldReturnEnrollmentForActiveStudent() {
+        Enrollment enrollment = new Enrollment("Math", "08:00-10:00", 4, 30);
+        enrollment.setId(1L);
+        jpaRepository.save(enrollment);
+
+        Optional<Enrollment> result = realService.getEnrollmentsByStudent(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getCourseName()).isEqualTo("Math");
     }
 }
