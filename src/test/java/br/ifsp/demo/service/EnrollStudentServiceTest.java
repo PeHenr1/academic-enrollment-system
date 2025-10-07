@@ -54,4 +54,15 @@ class EnrollStudentServiceTest {
         verify(enrollmentRepository).saveEnrollment(student, offeredCourse);
     }
 
+    @Test
+    void shouldThrowExceptionWhenPrerequisiteNotCompleted() {
+        offeredCourse.setPrerequisites(List.of("IFSP201"));
+        student.setCompletedCourses(List.of("IFSP101"));
+        when(courseRepository.findByCode("IFSP101")).thenReturn(Optional.of(offeredCourse));
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of("IFSP101")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Missing prerequisite");
+    }
+
 }
