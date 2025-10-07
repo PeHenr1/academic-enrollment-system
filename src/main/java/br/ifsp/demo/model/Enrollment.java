@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class Enrollment {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private LocalDate cancellationDeadline;
