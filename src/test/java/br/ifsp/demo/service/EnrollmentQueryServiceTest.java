@@ -100,7 +100,7 @@ class EnrollmentQueryServiceFunctionalTest {
 
     @Test
     @Tag("Functional")
-    @DisplayName("Functional: Should Return Enrollment for Active Student")
+    @DisplayName("Should Return Enrollment for Active Student")
     void shouldReturnEnrollmentForActiveStudent() {
         Enrollment enrollment = new Enrollment("Math", "08:00-10:00", 4, 30);
         enrollment.setId(1L);
@@ -114,7 +114,7 @@ class EnrollmentQueryServiceFunctionalTest {
 
     @Test
     @Tag("Functional")
-    @DisplayName("Functional: Should Throw NoCoursesFoundException When Enrollment Has No Courses")
+    @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
     void shouldThrowNoCoursesFoundExceptionWhenEnrollmentHasNoCourses() {
         Enrollment enrollment = new Enrollment();
         enrollment.setId(1L);
@@ -127,7 +127,7 @@ class EnrollmentQueryServiceFunctionalTest {
 
     @Test
     @Tag("Functional")
-    @DisplayName("Functional: Should Throw EnrollmentNotFoundException When Student Has No Enrollment")
+    @DisplayName("Should Throw EnrollmentNotFoundException When Student Has No Enrollment")
     void shouldThrowEnrollmentNotFoundExceptionWhenStudentHasNoEnrollment() {
         assertThatThrownBy(() -> realService.getEnrollmentsByStudent(999L))
                 .isInstanceOf(EnrollmentNotFoundException.class)
