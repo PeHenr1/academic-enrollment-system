@@ -111,4 +111,17 @@ class EnrollmentQueryServiceFunctionalTest {
         assertThat(result).isPresent();
         assertThat(result.get().getCourseName()).isEqualTo("Math");
     }
+
+    @Test
+    @Tag("Functional")
+    @DisplayName("Functional: Should Throw NoCoursesFoundException When Enrollment Has No Courses")
+    void shouldThrowNoCoursesFoundExceptionWhenEnrollmentHasNoCourses() {
+        Enrollment enrollment = new Enrollment();
+        enrollment.setId(1L);
+        jpaRepository.save(enrollment);
+
+        assertThatThrownBy(() -> realService.getEnrollmentsByStudent(1L))
+                .isInstanceOf(NoCoursesFoundException.class)
+                .hasMessage("Nenhuma disciplina encontrada para esta matrícula.");
+    }
 }
