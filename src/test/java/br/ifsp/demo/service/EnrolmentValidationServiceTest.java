@@ -48,4 +48,15 @@ class EnrollmentValidationServiceTest {
 
         verify(courseRepository).findById(1L);
     }
+
+    @Test
+    @DisplayName("Should Allow Enrollment When Course Is Valid")
+    void shouldAllowEnrollmentWhenCourseIsValid() {
+        Course validCourse = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(validCourse));
+
+        service.enrollStudent(1L, 123L);
+
+        verify(courseRepository).findById(1L);
+    }
 }
