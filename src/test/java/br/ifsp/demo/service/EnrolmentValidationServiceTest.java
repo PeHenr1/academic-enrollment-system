@@ -3,16 +3,16 @@ package br.ifsp.demo.service;
 import br.ifsp.demo.model.Course;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -72,5 +72,46 @@ class EnrollmentValidationServiceTest {
 
         verify(courseRepository).findById(5L);
         verifyNoInteractions(enrollmentRepository);
+    }
+}
+
+@Tag("UnitTest")
+@Tag("Functional")
+@SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class EnrollmentValidationServiceFunctionalTest {
+
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    private EnrollmentValidationService realService;
+
+    @AfterAll
+    void resetDatabase() {
+        enrollmentRepository.deleteAll();
+        courseRepository.deleteAll();
+    }
+
+    @BeforeEach
+    void setupDatabase() {
+        enrollmentRepository.deleteAll();
+        courseRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When Course Code Is Missing")
+    void shouldRejectEnrollmentWhenCourseCodeIsMissing() {
+        Course invalidCourse = new Course(null, "Programação I", "08:00-10:00", 4, List.of(), 40);
+        courseRepository.save(invalidCourse);
+
+        assertThatThrownBy(() -> realService.enrollStudent(invalidCourse.getId()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Course With Chosen Code Not Found");
+
+        assertThat(enrollmentRepository.findAll()).isEmpty();
     }
 }
