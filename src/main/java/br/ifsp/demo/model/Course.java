@@ -1,34 +1,37 @@
 package br.ifsp.demo.model;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Entity
-@Table(name = "course")
+import java.util.List;
+
 @Getter
-@NoArgsConstructor
+@Setter
+@Entity
+@Table(name = "courses")
 public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String courseName;
+    private String code;
+    private String name;
     private String schedule;
     private int credits;
-    private int vacancies;
+    private int availableSeats;
+    private String shift;
+    private List<String> prerequisites;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enrollment_id")
-    private Enrollment enrollment;
+    public Course() {}
 
-    public Course(String courseName, String schedule, int credits, int vacancies, Enrollment enrollment) {
-        this.courseName = courseName;
+    public Course(String code, String name, String schedule, int credits, List<String> prerequisites, int availableSeats) {
+        this.code = code;
+        this.name = name;
         this.schedule = schedule;
         this.credits = credits;
-        this.vacancies = vacancies;
-        this.enrollment = enrollment;
+        this.prerequisites = prerequisites;
+        this.availableSeats = availableSeats;
     }
 }
