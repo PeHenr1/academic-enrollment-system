@@ -38,8 +38,8 @@ class EnrollmentQueryServiceTest {
     @DisplayName("Should Return Courses for Enrollment")
     void shouldReturnCoursesForEnrollment() {
         Long enrollmentId = 1L;
-        Course math = new Course("Math", "08:00-10:00", 4, 30, null);
-        Course physics = new Course("Physics", "10:00-12:00", 3, 25, null);
+        Course math = new Course("MAT","Math", "08:00-10:00", 4, null, 30);
+        Course physics = new Course("PHY","Physics", "10:00-12:00", 3, null, 40);
 
         when(enrollmentRepository.existsById(enrollmentId)).thenReturn(true);
         when(courseRepository.findByEnrollmentId(enrollmentId)).thenReturn(List.of(math, physics));
@@ -47,7 +47,7 @@ class EnrollmentQueryServiceTest {
         List<Course> result = service.getCoursesByEnrollment(enrollmentId);
 
         assertThat(result).hasSize(2)
-                .extracting(Course::getCourseName)
+                .extracting(Course::getName)
                 .containsExactlyInAnyOrder("Math", "Physics");
 
         verify(enrollmentRepository).existsById(enrollmentId);
@@ -100,14 +100,19 @@ class EnrollmentQueryServiceFunctionalTest {
     @DisplayName("Should Return Multiple Courses for Enrollment")
     void shouldReturnMultipleCourses() {
         var enrollment = enrollmentRepository.save(new Enrollment());
-        Course math = new Course("Math", "08:00-10:00", 4, 30, enrollment);
-        Course physics = new Course("Physics", "10:00-12:00", 3, 25, enrollment);
+
+        Course math = new Course("MAT","Math", "08:00-10:00", 4, null, 30);
+        Course physics = new Course("PHY","Physics", "10:00-12:00", 3, null, 40);
+
+        math.setEnrollment(enrollment);
+        physics.setEnrollment(enrollment);
+
         courseRepository.saveAll(List.of(math, physics));
 
         List<Course> result = service.getCoursesByEnrollment(enrollment.getId());
 
         assertThat(result).hasSize(2)
-                .extracting(Course::getCourseName)
+                .extracting(Course::getName)
                 .containsExactlyInAnyOrder("Math", "Physics");
     }
 
