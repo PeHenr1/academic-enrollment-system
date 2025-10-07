@@ -114,4 +114,16 @@ class EnrollmentValidationServiceFunctionalTest {
 
         assertThat(enrollmentRepository.findAll()).isEmpty();
     }
+
+    @Test
+    @DisplayName("Should Allow Enrollment When Course Is Valid")
+    void shouldAllowEnrollmentWhenCourseIsValid() {
+        Course validCourse = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
+        courseRepository.save(validCourse);
+
+        realService.enrollStudent(validCourse.getId());
+
+        assertThat(enrollmentRepository.findAll()).hasSize(1);
+        assertThat(enrollmentRepository.findAll().getFirst().isCanceled()).isFalse();
+    }
 }
