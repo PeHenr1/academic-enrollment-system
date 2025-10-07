@@ -17,9 +17,11 @@ public class EnrollmentValidationService {
         this.enrollmentRepository = enrollmentRepository;
     }
 
-    public void enrollStudent(Long courseId, Long studentId) {
+    public void enrollStudent(Long courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+        if (course.getAvailableSeats() <= 0) throw new IllegalStateException("No More Available Seats for This Courses");
 
         if (course.getCode() == null || course.getCode().isBlank()) {
             throw new IllegalArgumentException("Course With Chosen Code Not Found");

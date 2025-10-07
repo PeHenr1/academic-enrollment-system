@@ -42,7 +42,7 @@ class EnrollmentValidationServiceTest {
 
         when(courseRepository.findById(1L)).thenReturn(Optional.of(invalidCourse));
 
-        assertThatThrownBy(() -> service.enrollStudent(1L, 123L))
+        assertThatThrownBy(() -> service.enrollStudent(1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Course With Chosen Code Not Found");
 
@@ -55,7 +55,7 @@ class EnrollmentValidationServiceTest {
         Course validCourse = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
         when(courseRepository.findById(1L)).thenReturn(Optional.of(validCourse));
 
-        service.enrollStudent(1L, 123L);
+        service.enrollStudent(1L);
 
         verify(courseRepository).findById(1L);
     }
@@ -66,7 +66,7 @@ class EnrollmentValidationServiceTest {
         Course fullCourse = new Course("ENG301", "Cálculo III", "14:00-16:00", 4, List.of(), 0);
         when(courseRepository.findById(5L)).thenReturn(Optional.of(fullCourse));
 
-        assertThatThrownBy(() -> service.enrollStudent(5L, 99L))
+        assertThatThrownBy(() -> service.enrollStudent(5L))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No More Available Seats for This Courses");
 
