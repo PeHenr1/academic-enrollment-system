@@ -24,7 +24,7 @@ public class EnrollmentQueryService {
         }
 
         Optional<Enrollment> enrollments = repository.findById(id);
-        if (enrollments.isEmpty()) {
+        if (enrollments.isEmpty() || enrollments.get().getCourseName() == null) {
             throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
         }
 
