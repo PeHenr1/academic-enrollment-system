@@ -17,13 +17,13 @@ public class EnrollmentQueryService {
         this.repository = repository;
     }
 
-    public Optional<Enrollment> getEnrollmentsByStudent(Long studentId) {
-        boolean studentExists = repository.existsByStudentId(studentId);
+    public Optional<Enrollment> getEnrollmentsByStudent(Long id) {
+        boolean studentExists = repository.existsById(id);
         if (!studentExists) {
             throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
         }
 
-        Optional<Enrollment> enrollments = repository.findById(studentId);
+        Optional<Enrollment> enrollments = repository.findById(id);
         if (enrollments.isEmpty()) {
             throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
         }
