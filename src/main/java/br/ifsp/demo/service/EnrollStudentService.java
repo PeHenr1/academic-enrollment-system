@@ -24,7 +24,19 @@ public class EnrollStudentService {
             OfferedCourse course = courseRepository.findByCode(courseCode)
                     .orElseThrow(() -> new BusinessRuleException("Course not found"));
 
+            validatePrerequisites(student, course);
+
             enrollmentRepository.saveEnrollment(student, course);
+        }
+    }
+
+    private void validatePrerequisites(Student student, OfferedCourse course) {
+        if (course.getPrerequisites() == null || course.getPrerequisites().isEmpty()) return;
+
+        for (String prereq : course.getPrerequisites()) {
+            if (!student.getCompletedCourses().contains(prereq)) {
+                throw new BusinessRuleException("Missing prerequisite: " + prereq);
+            }
         }
     }
 
