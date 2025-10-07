@@ -86,4 +86,21 @@ class EnrollStudentServiceTest {
                 .hasMessageContaining("Maximum of 20 credits exceeded");
     }
 
+    @Test
+    void shouldThrowExceptionWhenScheduleConflicts() {
+        ClassSchedule schedule = new ClassSchedule("Monday", "10:00", "12:00");
+        offeredCourse.setSchedule(List.of(schedule));
+
+        OfferedCourse alreadyEnrolled = new OfferedCourse("IFSP102", "Algorithms", 4);
+        alreadyEnrolled.setSchedule(List.of(new ClassSchedule("Monday", "11:00", "13:00")));
+
+        when(courseRepository.findByCode("IFSP101")).thenReturn(Optional.of(offeredCourse));
+        when(enrollmentRepository.findEnrollmentsByStudentAndTerm(student.getId(), offeredCourse.getTerm()))
+                .thenReturn(List.of(alreadyEnrolled));
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of("IFSP101")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Schedule conflict detected");
+    }
+
 }
