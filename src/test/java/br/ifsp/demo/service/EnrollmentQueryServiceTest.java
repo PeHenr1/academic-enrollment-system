@@ -82,48 +82,49 @@ class EnrollmentQueryServiceTest {
 class EnrollmentQueryServiceFunctionalTest {
 
     @Autowired
-    private EnrollmentRepository jpaRepository;
+    private EnrollmentRepository enrollmentRepository;
 
     @Autowired
-    private EnrollmentQueryService realService;
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private EnrollmentQueryService service;
 
     @BeforeEach
-    void setupFunctional() {
-        jpaRepository.deleteAll();
+    void setup() {
+        courseRepository.deleteAll();
+        enrollmentRepository.deleteAll();
     }
 
     @Test
-    @Tag("Functional")
-    @DisplayName("Should Return Enrollment for Active Student")
-    void shouldReturnEnrollmentForActiveStudent() {
-        Enrollment enrollment = new Enrollment("Math", "08:00-10:00", 4, 30);
-        enrollment.setId(1L);
-        jpaRepository.save(enrollment);
+    @DisplayName("Should Return Multiple Courses for Enrollment")
+    void shouldReturnMultipleCourses() {
+        var enrollment = enrollmentRepository.save(new Enrollment());
+        Course math = new Course("Math", "08:00-10:00", 4, 30, enrollment);
+        Course physics = new Course("Physics", "10:00-12:00", 3, 25, enrollment);
+        courseRepository.saveAll(List.of(math, physics));
 
-        Optional<Enrollment> result = realService.getEnrollmentsByStudent(1L);
+        List<Course> result = service.getCoursesByEnrollment(enrollment.getId());
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getCourseName()).isEqualTo("Math");
+        assertThat(result).hasSize(2)
+                .extracting(Course::getCourseName)
+                .containsExactlyInAnyOrder("Math", "Physics");
     }
 
     @Test
-    @Tag("Functional")
     @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
-    void shouldThrowNoCoursesFoundExceptionWhenEnrollmentHasNoCourses() {
-        Enrollment enrollment = new Enrollment();
-        enrollment.setId(1L);
-        jpaRepository.save(enrollment);
+    void shouldThrowNoCoursesFoundException() {
+        var enrollment = enrollmentRepository.save(new Enrollment());
 
-        assertThatThrownBy(() -> realService.getEnrollmentsByStudent(1L))
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollment.getId()))
                 .isInstanceOf(NoCoursesFoundException.class)
                 .hasMessage("Nenhuma disciplina encontrada para esta matrícula.");
     }
 
     @Test
-    @Tag("Functional")
-    @DisplayName("Should Throw EnrollmentNotFoundException When Student Has No Enrollment")
-    void shouldThrowEnrollmentNotFoundExceptionWhenStudentHasNoEnrollment() {
-        assertThatThrownBy(() -> realService.getEnrollmentsByStudent(999L))
+    @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
+    void shouldThrowEnrollmentNotFoundException() {
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
                 .isInstanceOf(EnrollmentNotFoundException.class)
                 .hasMessage("Matrícula não encontrada ou inativa");
     }
