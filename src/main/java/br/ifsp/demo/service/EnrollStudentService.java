@@ -25,6 +25,7 @@ public class EnrollStudentService {
                     .orElseThrow(() -> new BusinessRuleException("Course not found"));
 
             validatePrerequisites(student, course);
+            validateCourseAlreadyCompleted(student, course);
 
             enrollmentRepository.saveEnrollment(student, course);
         }
@@ -39,5 +40,12 @@ public class EnrollStudentService {
             }
         }
     }
+
+    private void validateCourseAlreadyCompleted(Student student, OfferedCourse course) {
+        if (student.getCompletedCourses().contains(course.getCode())) {
+            throw new BusinessRuleException("Course already completed");
+        }
+    }
+
 
 }
