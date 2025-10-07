@@ -29,6 +29,7 @@ public class EnrollStudentService {
             validateCourseAlreadyCompleted(student, course);
             validateCreditLimit(student, course);
             validateScheduleConflict(student, course);
+            validateSeatsAvailability(course);
 
             enrollmentRepository.saveEnrollment(student, course);
         }
@@ -73,6 +74,10 @@ public class EnrollStudentService {
         }
     }
 
-
+    private void validateSeatsAvailability(OfferedCourse course) {
+        if (course.getAvailableSeats() <= 0) {
+            throw new BusinessRuleException("No seats available");
+        }
+    }
 
 }
