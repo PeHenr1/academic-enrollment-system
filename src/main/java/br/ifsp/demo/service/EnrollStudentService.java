@@ -26,6 +26,7 @@ public class EnrollStudentService {
 
             validatePrerequisites(student, course);
             validateCourseAlreadyCompleted(student, course);
+            validateCreditLimit(student, course);
 
             enrollmentRepository.saveEnrollment(student, course);
         }
@@ -47,5 +48,12 @@ public class EnrollStudentService {
         }
     }
 
+    private void validateCreditLimit(Student student, OfferedCourse newCourse) {
+        int currentCredits = enrollmentRepository.calculateTotalCredits(student.getId(), newCourse.getTerm());
+        int total = currentCredits + newCourse.getCredits();
+        if (total > 20) {
+            throw new BusinessRuleException("Maximum of 20 credits exceeded");
+        }
+    }
 
 }
