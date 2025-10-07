@@ -4,9 +4,11 @@ import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.model.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
+@Service
 public class EnrollmentQueryService {
 
     private final EnrollmentRepository repository;
@@ -15,14 +17,16 @@ public class EnrollmentQueryService {
         this.repository = repository;
     }
 
-    public List<Enrollment> getEnrollmentsByStudent(Long studentId) {
+    public Optional<Enrollment> getEnrollmentsByStudent(Long studentId) {
         boolean studentExists = repository.existsByStudentId(studentId);
+        if (!studentExists) {
+            throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
+        }
 
-        if (!studentExists) throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
-
-        List<Enrollment> enrollments = repository.findByStudentId(studentId);
-
-        if (enrollments.isEmpty()) throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
+        Optional<Enrollment> enrollments = repository.findById(studentId);
+        if (enrollments.isEmpty()) {
+            throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
+        }
 
         return enrollments;
     }

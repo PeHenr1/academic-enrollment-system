@@ -1,33 +1,31 @@
 package br.ifsp.demo.model;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+
+@Entity
+@Table(name = "enrollment")
+@Getter
 public class Enrollment {
 
-    private final String courseName;
-    private final String schedule;
-    private final int credits;
-    private final int vacancies;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String courseName;
+    private String schedule;
+    private int credits;
+    private int vacancies;
 
-    public Enrollment(String courseName, String schedule, int credits, int vacancies) {
+    public Enrollment(String courseName, String schedule, Integer credits, Integer vacancies) {
         this.courseName = courseName;
         this.schedule = schedule;
         this.credits = credits;
         this.vacancies = vacancies;
     }
 
-    public String getCourseName() {
-        return courseName;
-    }
+    public Enrollment() {}
 
-    public String getSchedule() {
-        return schedule;
-    }
-
-    public int getCredits() {
-        return credits;
-    }
-
-    public int getVacancies() {
-        return vacancies;
+    public void setId(long l) {
     }
 }
 
