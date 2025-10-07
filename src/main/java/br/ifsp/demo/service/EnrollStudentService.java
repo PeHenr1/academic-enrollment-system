@@ -1,5 +1,6 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.domain.ClassSchedule;
 import br.ifsp.demo.domain.OfferedCourse;
 import br.ifsp.demo.domain.Student;
 import br.ifsp.demo.exception.BusinessRuleException;
@@ -27,6 +28,7 @@ public class EnrollStudentService {
             validatePrerequisites(student, course);
             validateCourseAlreadyCompleted(student, course);
             validateCreditLimit(student, course);
+            validateScheduleConflict(student, course);
 
             enrollmentRepository.saveEnrollment(student, course);
         }
@@ -55,5 +57,22 @@ public class EnrollStudentService {
             throw new BusinessRuleException("Maximum of 20 credits exceeded");
         }
     }
+
+    private void validateScheduleConflict(Student student, OfferedCourse newCourse) {
+        List<OfferedCourse> alreadyEnrolled =
+                enrollmentRepository.findEnrollmentsByStudentAndTerm(student.getId(), newCourse.getTerm());
+
+        for (OfferedCourse enrolled : alreadyEnrolled) {
+            for (ClassSchedule a : enrolled.getSchedule()) {
+                for (ClassSchedule b : newCourse.getSchedule()) {
+                    if (a.conflictsWith(b)) {
+                        throw new BusinessRuleException("Schedule conflict detected");
+                    }
+                }
+            }
+        }
+    }
+
+
 
 }
