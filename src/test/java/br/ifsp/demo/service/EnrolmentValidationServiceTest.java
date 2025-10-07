@@ -59,4 +59,18 @@ class EnrollmentValidationServiceTest {
 
         verify(courseRepository).findById(1L);
     }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When No Seats Are Available")
+    void shouldRejectEnrollmentWhenNoSeatsAreAvailable() {
+        Course fullCourse = new Course("ENG301", "Cálculo III", "14:00-16:00", 4, List.of(), 0);
+        when(courseRepository.findById(5L)).thenReturn(Optional.of(fullCourse));
+
+        assertThatThrownBy(() -> service.enrollStudent(5L, 99L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No More Available Seats for This Courses");
+
+        verify(courseRepository).findById(5L);
+        verifyNoInteractions(enrollmentRepository);
+    }
 }
