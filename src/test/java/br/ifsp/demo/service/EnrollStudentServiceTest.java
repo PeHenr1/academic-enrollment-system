@@ -103,4 +103,14 @@ class EnrollStudentServiceTest {
                 .hasMessageContaining("Schedule conflict detected");
     }
 
+    @Test
+    void shouldThrowExceptionWhenNoSeatsAvailable() {
+        offeredCourse.setAvailableSeats(0);
+        when(courseRepository.findByCode("IFSP101")).thenReturn(Optional.of(offeredCourse));
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of("IFSP101")))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("No seats available");
+    }
+
 }
