@@ -150,4 +150,14 @@ class EnrollmentValidationServiceFunctionalTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No More Available Seats for This Courses");
     }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When Course ID Does Not Exist")
+    void shouldRejectEnrollmentWhenCourseIdDoesNotExist() {
+        assertThatThrownBy(() -> realService.enrollStudent(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Course not found");
+
+        assertThat(enrollmentRepository.findAll()).isEmpty();
+    }
 }
