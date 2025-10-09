@@ -86,6 +86,19 @@ class EnrollmentValidationServiceTest {
         verify(courseRepository).findById(999L);
         verifyNoInteractions(enrollmentRepository);
     }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When Course Code Is Blank")
+    void shouldRejectEnrollmentWhenCourseCodeIsBlank() {
+        Course blankCodeCourse = new Course("   ", "Banco de Dados", "10:00-12:00", 4, List.of(), 20);
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(blankCodeCourse));
+
+        assertThatThrownBy(() -> service.enrollStudent(10L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Course With Chosen Code Not Found");
+
+        verify(courseRepository).findById(10L);
+    }
 }
 
 @Tag("UnitTest")
