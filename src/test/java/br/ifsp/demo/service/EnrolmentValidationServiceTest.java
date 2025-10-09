@@ -73,6 +73,19 @@ class EnrollmentValidationServiceTest {
         verify(courseRepository).findById(5L);
         verifyNoInteractions(enrollmentRepository);
     }
+
+    @Test
+    @DisplayName("Should Reject Enrollment When Course ID Does Not Exist")
+    void shouldRejectEnrollmentWhenCourseIdDoesNotExist() {
+        when(courseRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.enrollStudent(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Course not found");
+
+        verify(courseRepository).findById(999L);
+        verifyNoInteractions(enrollmentRepository);
+    }
 }
 
 @Tag("UnitTest")
