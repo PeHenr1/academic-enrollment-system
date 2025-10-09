@@ -134,7 +134,8 @@ class CancelEnrollmentServiceFunctionalTest {
     @Test
     @DisplayName("Should Persist Cancellation in Database")
     void shouldPersistCancellationInDatabase() {
-        Enrollment enrollment = new Enrollment(1L);
+        Enrollment enrollment = new Enrollment();
+        enrollment.setDeadline(LocalDate.now().plusDays(1));
         jpaRepository.save(enrollment);
 
         boolean result = realService.cancelEnrollment(enrollment.getId());
@@ -149,9 +150,9 @@ class CancelEnrollmentServiceFunctionalTest {
     @Test
     @DisplayName("Should Fail When Enrollment Not Found in Database")
     void shouldFailWhenEnrollmentNotFoundInDatabase() {
-        Long enrolmentId = 999L;
+        Long enrollmentId = 999L;
 
-        boolean result = realService.cancelEnrollment(enrolmentId);
+        boolean result = realService.cancelEnrollment(enrollmentId);
 
         assertFalse(result);
     }
@@ -161,11 +162,12 @@ class CancelEnrollmentServiceFunctionalTest {
     @Test
     @DisplayName("Should Throw Exception When Enrollment Already Cancelled")
     void shouldThrowExceptionWhenAlreadyCancelled() {
-        Enrollment enrollment = new Enrollment(2L);
+        Enrollment enrollment = new Enrollment();
+        enrollment.setDeadline(LocalDate.now().plusDays(1));
         enrollment.cancel();
         jpaRepository.save(enrollment);
 
-        assertThatThrownBy(() -> realService.cancelEnrollment((enrollment.getId())))
+        assertThatThrownBy(() -> realService.cancelEnrollment(enrollment.getId()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Enrollment Is Already Cancelled");
 
@@ -178,7 +180,7 @@ class CancelEnrollmentServiceFunctionalTest {
     @Test
     @DisplayName("Should Fail Cancellation When Deadline Has Expired")
     void shouldFailWhenCancellationWhenDeadlineExpired() {
-        Enrollment enrollment = new Enrollment(3L);
+        Enrollment enrollment = new Enrollment();
         enrollment.setDeadline(LocalDate.now().minusDays(1));
         jpaRepository.save(enrollment);
 
