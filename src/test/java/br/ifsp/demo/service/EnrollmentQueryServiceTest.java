@@ -144,4 +144,13 @@ class EnrollmentQueryServiceFunctionalTest {
                 .isInstanceOf(EnrollmentNotFoundException.class)
                 .hasMessage("Matrícula não encontrada ou inativa");
     }
+
+    @Test
+    @Tag("Functional")
+    @DisplayName("Should Reject When Enrollment Is Null or Not Found")
+    void shouldRejectWhenEnrollmentIsNullOrNotFound() {
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("ID cannot be null");
+    }
 }
