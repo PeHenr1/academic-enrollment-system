@@ -1,26 +1,38 @@
-package br.ifsp.demo.domain;
+package br.ifsp.demo.infrastructure.persistence;
 
+import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.domain.Student;
+import br.ifsp.demo.domain.Term;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
-public class Enrollment {
+@Entity
+@Table(name = "enrollment")
+public class EnrollmentEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "student_id")
     private Student student;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "course_id")
     private Course course;
+
+    @Embedded
     private Term term;
+
     private LocalDate cancellationDeadline;
     private boolean canceled = false;
+
+    @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Course> courses;
 
-    public Enrollment() {}
-
-    public Enrollment(Student student, Course course, Term term) {
-        this.student = student;
-        this.course = course;
-        this.term = term;
-        this.cancellationDeadline = LocalDate.now().plusDays(3);
-    }
+    public EnrollmentEntity() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -36,6 +48,4 @@ public class Enrollment {
     public void setCanceled(boolean canceled) { this.canceled = canceled; }
     public List<Course> getCourses() { return courses; }
     public void setCourses(List<Course> courses) { this.courses = courses; }
-    public void setDeadline(LocalDate date) { this.cancellationDeadline = date; }
-    public void cancel() { this.canceled = true; }
 }

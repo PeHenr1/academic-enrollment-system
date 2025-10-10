@@ -3,6 +3,7 @@ package br.ifsp.demo.controller;
 import br.ifsp.demo.domain.Student;
 import br.ifsp.demo.domain.Term;
 import br.ifsp.demo.exception.BusinessRuleException;
+import br.ifsp.demo.mapper.StudentMapper;
 import br.ifsp.demo.repository.StudentRepository;
 import br.ifsp.demo.service.EnrollStudentService;
 import lombok.AllArgsConstructor;
@@ -25,9 +26,10 @@ public class EnrollmentController {
             @PathVariable String courseCode) {
 
         try {
-            Student student = studentRepository.findById(studentId)
+            var studentEntity = studentRepository.findById(studentId)
                     .orElseThrow(() -> new BusinessRuleException("Student not found"));
 
+            Student student = StudentMapper.toDomain(studentEntity);
             Term term = Term.current();
 
             enrollStudentService.enroll(student, List.of(courseCode), term);
