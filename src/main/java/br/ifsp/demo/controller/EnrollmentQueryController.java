@@ -2,7 +2,7 @@ package br.ifsp.demo.controller;
 
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
-import br.ifsp.demo.model.Course;
+import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.service.EnrollmentQueryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

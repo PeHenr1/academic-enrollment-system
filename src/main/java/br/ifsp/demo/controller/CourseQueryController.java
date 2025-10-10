@@ -1,6 +1,6 @@
 package br.ifsp.demo.controller;
 
-import br.ifsp.demo.model.Course;
+import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.service.CourseQueryService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;

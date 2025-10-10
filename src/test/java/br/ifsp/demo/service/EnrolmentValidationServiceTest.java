@@ -1,6 +1,6 @@
 package br.ifsp.demo.service;
 
-import br.ifsp.demo.model.Course;
+import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.junit.jupiter.api.*;

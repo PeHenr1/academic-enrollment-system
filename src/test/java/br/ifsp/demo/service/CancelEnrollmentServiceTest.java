@@ -1,6 +1,6 @@
 package br.ifsp.demo.service;
 
-import br.ifsp.demo.model.Enrollment;
+import br.ifsp.demo.domain.Enrollment;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
