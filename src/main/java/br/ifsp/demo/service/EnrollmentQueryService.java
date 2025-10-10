@@ -21,6 +21,8 @@ public class EnrollmentQueryService {
     }
 
     public List<Course> getCoursesByEnrollment(Long enrollmentId) {
+        if (enrollmentId == null) throw new IllegalArgumentException("ID cannot be null");
+
         if (!enrollmentRepository.existsById(enrollmentId)) {
             throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
         }
