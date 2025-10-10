@@ -68,7 +68,7 @@ class EnrollmentQueryServiceTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("Nenhuma disciplina encontrada para esta matrícula.");
+                .hasMessage("No Courses Found For This Enrollment.");
     }
 
     @Test
@@ -79,7 +79,7 @@ class EnrollmentQueryServiceTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
                 .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Matrícula não encontrada ou inativa");
+                .hasMessage("Enrollment Not Found or Inactive");
     }
 }
 
@@ -165,7 +165,7 @@ class EnrollmentQueryServiceFunctionalTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentWithNoCourses.getId()))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("Nenhuma disciplina encontrada para esta matrícula.");
+                .hasMessage("No Courses Found For This Enrollment.");
     }
 
     @Test
@@ -173,6 +173,6 @@ class EnrollmentQueryServiceFunctionalTest {
     void shouldThrowEnrollmentNotFoundException() {
         assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
                 .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Matrícula não encontrada ou inativa");
+                .hasMessage("Enrollment Not Found or Inactive");
     }
 }

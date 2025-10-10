@@ -22,12 +22,12 @@ public class EnrollmentQueryService {
 
     public List<Course> getCoursesByEnrollment(Long enrollmentId) {
         if (!enrollmentRepository.existsById(enrollmentId)) {
-            throw new EnrollmentNotFoundException("Matrícula não encontrada ou inativa");
+            throw new EnrollmentNotFoundException("Enrollment Not Found or Inactive");
         }
 
         List<Course> courses = courseRepository.findByEnrollmentId(enrollmentId);
         if (courses.isEmpty()) {
-            throw new NoCoursesFoundException("Nenhuma disciplina encontrada para esta matrícula.");
+            throw new NoCoursesFoundException("No Courses Found For This Enrollment.");
         }
 
         return courses;
