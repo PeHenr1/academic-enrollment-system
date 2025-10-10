@@ -1,21 +1,29 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.domain.Enrollment;
+import br.ifsp.demo.domain.Student;
+import br.ifsp.demo.domain.Term;
+import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
+import br.ifsp.demo.repository.StudentRepository;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@Tag("UnitTest")
+@Tag("TDD")
 class CancelEnrollmentServiceTest {
 
     @Mock
@@ -29,13 +37,17 @@ class CancelEnrollmentServiceTest {
         service = new CancelEnrollmentService(repository);
     }
 
-    @Tag("TDD")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Cancel Existing Enrollment")
     void shouldCancelExistingEnrollment() {
         Long enrollmentId = 1L;
-        Enrollment enrollment = new Enrollment(enrollmentId);
+
+        Student student = new Student("123", "John Doe");
+        Course course = new Course("IFSP101", "Software Engineering", 4);
+        Term term = new Term(2025, 1);
+
+        Enrollment enrollment = new Enrollment(student, course, term);
+        ReflectionTestUtils.setField(enrollment, "id", enrollmentId);
 
         when(repository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
         when(repository.save(any(Enrollment.class))).thenReturn(enrollment);
@@ -47,8 +59,6 @@ class CancelEnrollmentServiceTest {
         verify(repository).findById(enrollmentId);
     }
 
-    @Tag("TDD")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail When Enrollment Does Not Exist")
     void shouldFailWhenEnrollmentDoesNotExist() {
@@ -62,8 +72,6 @@ class CancelEnrollmentServiceTest {
         verify(repository).findById(enrollmentId);
     }
 
-    @Tag("TDD")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Throw NullPointerException When Enrollment ID is Null")
     void shouldThrowNullExceptionWhenEnrollmentIdIsNull() {
@@ -73,8 +81,6 @@ class CancelEnrollmentServiceTest {
         verify(repository, never()).findById(any());
     }
 
-    @Tag("TDD")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail Cancellation When Deadline Has Expired")
     void shouldFailCancellationWhenDeadlineHasExpired() {
@@ -90,8 +96,6 @@ class CancelEnrollmentServiceTest {
         verify(repository).findById(enrollmentId);
     }
 
-    @Tag("TDD")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail Cancellation When Enrollment Is Already Canceled")
     void shouldFailCancellationWhenEnrollmentIsAlreadyCanceled() {
@@ -114,90 +118,108 @@ class CancelEnrollmentServiceTest {
 class CancelEnrollmentServiceFunctionalTest {
 
     @Autowired
-    private EnrollmentRepository jpaRepository;
+    private EnrollmentRepository enrollmentRepository;
 
     @Autowired
-    private CancelEnrollmentService realService;
+    private StudentRepository studentRepository;
 
-    @AfterAll
-    void clearDatabase() {
-        jpaRepository.deleteAll();
-    }
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private CancelEnrollmentService cancelEnrollmentService;
 
     @BeforeEach
-    void setupFunctional() {
-        jpaRepository.deleteAll();
+    void cleanDatabase() {
+        enrollmentRepository.deleteAll();
+        studentRepository.deleteAll();
+        courseRepository.deleteAll();
     }
 
-    @Tag("Functional")
-    @Tag("UnitTest")
+    @AfterAll
+    void cleanup() {
+        enrollmentRepository.deleteAll();
+        studentRepository.deleteAll();
+        courseRepository.deleteAll();
+    }
+
     @Test
     @DisplayName("Should Persist Cancellation in Database")
     void shouldPersistCancellationInDatabase() {
-        Enrollment enrollment = new Enrollment();
-        enrollment.setDeadline(LocalDate.now().plusDays(1));
-        jpaRepository.save(enrollment);
+        Student student = new Student("123", "John Doe");
+        studentRepository.save(student);
 
-        boolean result = realService.cancelEnrollment(enrollment.getId());
+        Course course = new Course("IFSP101", "Software Engineering", 4);
+        courseRepository.save(course);
+
+        Term term = new Term(2025, 1);
+        Enrollment enrollment = new Enrollment(student, course, term);
+        enrollment.setDeadline(LocalDate.now().plusDays(1));
+        enrollmentRepository.save(enrollment);
+
+        boolean result = cancelEnrollmentService.cancelEnrollment(enrollment.getId());
 
         assertTrue(result);
-        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        Enrollment updated = enrollmentRepository.findById(enrollment.getId()).orElseThrow();
         assertTrue(updated.isCanceled());
     }
 
-    @Tag("Functional")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail When Enrollment Not Found in Database")
-    void shouldFailWhenEnrollmentNotFoundInDatabase() {
-        Long enrollmentId = 999L;
-
-        boolean result = realService.cancelEnrollment(enrollmentId);
-
+    void shouldFailWhenEnrollmentNotFound() {
+        boolean result = cancelEnrollmentService.cancelEnrollment(999L);
         assertFalse(result);
     }
 
-    @Tag("Functional")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Throw Exception When Enrollment Already Cancelled")
     void shouldThrowExceptionWhenAlreadyCancelled() {
-        Enrollment enrollment = new Enrollment();
+        Student student = new Student("124", "Jane Doe");
+        studentRepository.save(student);
+
+        Course course = new Course("IFSP102", "Databases", 4);
+        courseRepository.save(course);
+
+        Term term = new Term(2025, 1);
+        Enrollment enrollment = new Enrollment(student, course, term);
         enrollment.setDeadline(LocalDate.now().plusDays(1));
         enrollment.cancel();
-        jpaRepository.save(enrollment);
+        enrollmentRepository.save(enrollment);
 
-        assertThatThrownBy(() -> realService.cancelEnrollment(enrollment.getId()))
+        assertThatThrownBy(() -> cancelEnrollmentService.cancelEnrollment(enrollment.getId()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Enrollment Is Already Cancelled");
 
-        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        Enrollment updated = enrollmentRepository.findById(enrollment.getId()).orElseThrow();
         assertTrue(updated.isCanceled());
     }
 
-    @Tag("Functional")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Fail Cancellation When Deadline Has Expired")
-    void shouldFailWhenCancellationWhenDeadlineExpired() {
-        Enrollment enrollment = new Enrollment();
-        enrollment.setDeadline(LocalDate.now().minusDays(1));
-        jpaRepository.save(enrollment);
+    void shouldFailWhenDeadlineExpired() {
+        Student student = new Student("125", "Mark Smith");
+        studentRepository.save(student);
 
-        assertThatThrownBy(() -> realService.cancelEnrollment(enrollment.getId()))
+        Course course = new Course("IFSP103", "Algorithms", 4);
+        courseRepository.save(course);
+
+        Term term = new Term(2025, 1);
+        Enrollment enrollment = new Enrollment(student, course, term);
+        enrollment.setDeadline(LocalDate.now().minusDays(1));
+        enrollmentRepository.save(enrollment);
+
+        assertThatThrownBy(() -> cancelEnrollmentService.cancelEnrollment(enrollment.getId()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Cancellation Deadline has Expired");
 
-        Enrollment updated = jpaRepository.findById(enrollment.getId()).orElseThrow();
+        Enrollment updated = enrollmentRepository.findById(enrollment.getId()).orElseThrow();
         assertFalse(updated.isCanceled());
     }
 
-    @Tag("Functional")
-    @Tag("UnitTest")
     @Test
     @DisplayName("Should Throw Exception When ID is Null")
     void shouldThrowExceptionWhenIdIsNull() {
-        assertThatThrownBy(() -> realService.cancelEnrollment(null))
+        assertThatThrownBy(() -> cancelEnrollmentService.cancelEnrollment(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("ID cannot be null");
     }
