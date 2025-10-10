@@ -1,17 +1,17 @@
 package br.ifsp.demo.repository;
 
-import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.infrastructure.persistence.CourseEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findByEnrollmentId(Long enrollmentId);
-    default List<Course> findCourses() {
+public interface CourseRepository extends JpaRepository<CourseEntity, Long> {
+    Optional<CourseEntity> findByCode(String code);
+    List<CourseEntity> findByEnrollmentId(Long enrollmentId);
+    default List<CourseEntity> findCourses() {
         return findAll();
     }
-    Optional<Course> findByCode(String code);
 }
