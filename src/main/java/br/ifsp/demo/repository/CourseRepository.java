@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
+    List<Course> findByEnrollmentId(Long enrollmentId);
     default List<Course> findCourses() {
         return findAll();
     }

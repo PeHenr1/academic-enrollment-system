@@ -22,7 +22,13 @@ public class Course {
     private int credits;
     private int availableSeats;
     private String shift;
+
+    @ElementCollection
     private List<String> prerequisites;
+
+    @ManyToOne
+    @JoinColumn(name = "enrollment_id")
+    private Enrollment enrollment;
 
     public Course() {}
 

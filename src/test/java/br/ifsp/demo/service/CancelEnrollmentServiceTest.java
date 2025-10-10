@@ -135,6 +135,7 @@ class CancelEnrollmentServiceFunctionalTest {
     @DisplayName("Should Persist Cancellation in Database")
     void shouldPersistCancellationInDatabase() {
         Enrollment enrollment = new Enrollment();
+        enrollment.setDeadline(LocalDate.now().plusDays(1));
         jpaRepository.save(enrollment);
 
         boolean result = realService.cancelEnrollment(enrollment.getId());
@@ -150,7 +151,9 @@ class CancelEnrollmentServiceFunctionalTest {
     @DisplayName("Should Fail When Enrollment Not Found in Database")
     void shouldFailWhenEnrollmentNotFoundInDatabase() {
         Long enrollmentId = 999L;
+
         boolean result = realService.cancelEnrollment(enrollmentId);
+
         assertFalse(result);
     }
 
@@ -160,6 +163,7 @@ class CancelEnrollmentServiceFunctionalTest {
     @DisplayName("Should Throw Exception When Enrollment Already Cancelled")
     void shouldThrowExceptionWhenAlreadyCancelled() {
         Enrollment enrollment = new Enrollment();
+        enrollment.setDeadline(LocalDate.now().plusDays(1));
         enrollment.cancel();
         jpaRepository.save(enrollment);
 
