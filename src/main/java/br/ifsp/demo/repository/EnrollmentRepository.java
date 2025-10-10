@@ -1,6 +1,6 @@
 package br.ifsp.demo.repository;
 
-import br.ifsp.demo.model.Enrollment;
+import br.ifsp.demo.domain.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

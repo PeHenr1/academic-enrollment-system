@@ -2,8 +2,8 @@ package br.ifsp.demo.service;
 
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
-import br.ifsp.demo.model.Course;
-import br.ifsp.demo.model.Enrollment;
+import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.domain.Enrollment;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.junit.jupiter.api.BeforeEach;
