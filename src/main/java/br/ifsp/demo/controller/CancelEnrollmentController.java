@@ -28,7 +28,7 @@ public class CancelEnrollmentController {
         } catch (NullPointerException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body(e.getMessage());
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 }
