@@ -76,6 +76,17 @@ class EnrollmentQueryServiceTest {
                 .isInstanceOf(EnrollmentNotFoundException.class)
                 .hasMessage("Matrícula não encontrada ou inativa");
     }
+
+    @Test
+    @DisplayName("Should Reject When Enrollment ID Is Null")
+    void shouldRejectWhenEnrollmentIdIsNull() {
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("ID cannot be null");
+
+        verifyNoInteractions(enrollmentRepository);
+        verifyNoInteractions(courseRepository);
+    }
 }
 
 @SpringBootTest
