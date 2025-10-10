@@ -34,7 +34,6 @@ public class Course {
     @Embedded
     private Term term = Term.current();
 
-    // ======= Constructors =======
     public Course() {}
 
     public Course(String code, String name, int credits) {
@@ -51,8 +50,6 @@ public class Course {
         this.prerequisites = prerequisites != null ? prerequisites : new ArrayList<>();
         this.availableSeats = availableSeats;
     }
-
-    // ======= Business Logic =======
 
     public boolean hasAvailableSeats() {
         return availableSeats > 0;

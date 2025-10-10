@@ -158,7 +158,6 @@ class EnrollStudentServiceFunctionalTest {
         student = new Student("123", "John Doe");
         term = Term.current();
 
-        // Salva o Student antes de criar qualquer matrícula
         studentRepository.save(student);
 
         course = new Course("IFSP101", "Software Engineering", 4);

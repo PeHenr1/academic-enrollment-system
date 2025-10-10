@@ -1,5 +1,3 @@
-// File: br.ifsp.demo.domain.Student.java
-
 package br.ifsp.demo.domain;
 
 import jakarta.persistence.CollectionTable;
@@ -13,14 +11,13 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity // 1. Torna a classe persistível
+@Entity
 @Table(name = "student")
 public class Student {
 
-    @Id // 2. Define 'id' como chave primária
+    @Id
     private String id;
 
-    // Removendo 'final' para compatibilidade com o construtor vazio do Hibernate
     private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -29,7 +26,6 @@ public class Student {
     @Column(name = "course_code")
     private List<String> completedCourses = new ArrayList<>();
 
-    // 3. Construtor vazio necessário para Hibernate
     protected Student() {}
 
     public Student(String id, String name) {

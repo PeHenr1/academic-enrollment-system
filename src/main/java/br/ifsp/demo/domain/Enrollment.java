@@ -31,7 +31,6 @@ public class Enrollment {
 
     private boolean canceled = false;
 
-    // Construtor atualizado
     public Enrollment(Student student, Course course, Term term) {
         this.student = student;
         this.course = course;

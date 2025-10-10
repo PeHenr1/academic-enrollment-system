@@ -1,5 +1,3 @@
-// File: br.ifsp.demo.repository.EnrollmentRepository.java
-
 package br.ifsp.demo.repository;
 
 import br.ifsp.demo.domain.Course;

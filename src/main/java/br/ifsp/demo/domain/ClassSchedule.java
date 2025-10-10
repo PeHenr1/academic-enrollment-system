@@ -10,7 +10,7 @@ public class ClassSchedule {
     private LocalTime startTime;
     private LocalTime endTime;
 
-    protected ClassSchedule() {} // JPA requirement
+    protected ClassSchedule() {}
 
     public ClassSchedule(String dayOfWeek, String start, String end) {
         this.dayOfWeek = dayOfWeek;
