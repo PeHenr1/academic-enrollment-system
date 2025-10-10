@@ -1,111 +1,134 @@
 package br.ifsp.demo.service;
 
-import br.ifsp.demo.model.Course;
+import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.domain.Enrollment;
+import br.ifsp.demo.domain.Student;
+import br.ifsp.demo.domain.Term;
+import br.ifsp.demo.exception.BusinessRuleException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import br.ifsp.demo.domain.ClassSchedule;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
+import br.ifsp.demo.repository.StudentRepository;
 import org.junit.jupiter.api.*;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
-
-
-@Tag("TDD")
 @Tag("UnitTest")
+@Tag("TDD")
 class EnrollmentValidationServiceTest {
 
-    @Mock
-    private CourseRepository courseRepository;
-
-    @Mock
-    private EnrollmentRepository enrollmentRepository;
-
     private EnrollmentValidationService service;
+
+    private Student student;
+    private Course course;
+    private Term term;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        service = new EnrollmentValidationService(courseRepository, enrollmentRepository);
+        service = new EnrollmentValidationService();
+
+        student = new Student("123", "John Doe");
+        student.setCompletedCourses(new ArrayList<>());
+
+        term = new Term(2025, 1);
+
+        course = new Course("IFSP101", "Software Engineering", 4);
+        course.setAvailableSeats(5);
+        course.setSchedule(new ArrayList<>());
+        course.setPrerequisites(new ArrayList<>());
     }
 
     @Test
-    @DisplayName("Should Reject Enrollment When Course Code Is Missing")
-    void shouldRejectEnrollmentWhenCourseCodeIsMissing() {
-        Course invalidCourse = new Course(null, "Programação I", "08:00-10:00", 4, List.of(), 40);
-
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(invalidCourse));
-
-        assertThatThrownBy(() -> service.enrollStudent(1L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Course With Chosen Code Not Found");
-
-        verify(courseRepository).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Should Allow Enrollment When Course Is Valid")
-    void shouldAllowEnrollmentWhenCourseIsValid() {
-        Course validCourse = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(validCourse));
-
-        service.enrollStudent(1L);
-
-        verify(courseRepository).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Should Reject Enrollment When No Seats Are Available")
-    void shouldRejectEnrollmentWhenNoSeatsAreAvailable() {
-        Course fullCourse = new Course("ENG301", "Cálculo III", "14:00-16:00", 4, List.of(), 0);
-        when(courseRepository.findById(5L)).thenReturn(Optional.of(fullCourse));
-
-        assertThatThrownBy(() -> service.enrollStudent(5L))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No More Available Seats for This Courses");
-
-        verify(courseRepository).findById(5L);
-        verifyNoInteractions(enrollmentRepository);
-    }
-
-    @Test
-    @DisplayName("Should Reject Enrollment When Course ID Does Not Exist")
-    void shouldRejectEnrollmentWhenCourseIdDoesNotExist() {
-        when(courseRepository.findById(999L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.enrollStudent(999L))
-                .isInstanceOf(IllegalArgumentException.class)
+    void shouldRejectWhenCourseIsNull() {
+        assertThatThrownBy(() -> service.validateCourseExists(null))
+                .isInstanceOf(BusinessRuleException.class)
                 .hasMessage("Course not found");
-
-        verify(courseRepository).findById(999L);
-        verifyNoInteractions(enrollmentRepository);
     }
 
     @Test
-    @DisplayName("Should Reject Enrollment When Course Code Is Blank")
-    void shouldRejectEnrollmentWhenCourseCodeIsBlank() {
-        Course blankCodeCourse = new Course("   ", "Banco de Dados", "10:00-12:00", 4, List.of(), 20);
-        when(courseRepository.findById(10L)).thenReturn(Optional.of(blankCodeCourse));
+    void shouldRejectWhenCourseCodeIsNull() {
+        course.setCode(null);
+        assertThatThrownBy(() -> service.validateCourseExists(course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course code is missing or blank");
+    }
 
-        assertThatThrownBy(() -> service.enrollStudent(10L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Course With Chosen Code Not Found");
+    @Test
+    void shouldRejectWhenCourseCodeIsBlank() {
+        course.setCode("   ");
+        assertThatThrownBy(() -> service.validateCourseExists(course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course code is missing or blank");
+    }
 
-        verify(courseRepository).findById(10L);
+    @Test
+    void shouldRejectWhenNoSeatsAvailable() {
+        course.setAvailableSeats(0);
+        assertThatThrownBy(() -> service.validateSeatsAvailability(course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("No seats available");
+    }
+
+    @Test
+    void shouldRejectWhenCourseAlreadyCompleted() {
+        student.getCompletedCourses().add("IFSP101");
+        assertThatThrownBy(() -> service.validateCourseAlreadyCompleted(student, course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Course already completed");
+    }
+
+    @Test
+    void shouldRejectWhenPrerequisiteNotCompleted() {
+        course.setPrerequisites(List.of("IFSP201"));
+        assertThatThrownBy(() -> service.validatePrerequisites(student, course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Missing prerequisite");
+    }
+
+    @Test
+    void shouldRejectWhenCreditLimitExceeded() {
+        course.setCredits(15);
+        Enrollment existingEnrollment = new Enrollment(student, new Course("IFSP102", "Algorithms", 10), term);
+        List<Enrollment> currentEnrollments = List.of(existingEnrollment);
+
+        assertThatThrownBy(() -> service.validateCreditLimit(student, course, term, currentEnrollments))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Maximum of 20 credits exceeded");
+    }
+
+    @Test
+    void shouldRejectWhenScheduleConflictDetected() {
+        course.setSchedule(List.of(new br.ifsp.demo.domain.ClassSchedule("Monday", "10:00", "12:00")));
+        Course enrolledCourse = new Course("IFSP102", "Algorithms", 4);
+        enrolledCourse.setSchedule(List.of(new br.ifsp.demo.domain.ClassSchedule("Monday", "11:00", "13:00")));
+        Enrollment existingEnrollment = new Enrollment(student, enrolledCourse, term);
+
+        assertThatThrownBy(() -> service.validateScheduleConflict(course, List.of(existingEnrollment)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Schedule conflict detected");
     }
 }
 
-@Tag("UnitTest")
 @Tag("Functional")
+@Tag("UnitTest")
 @SpringBootTest
+@Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EnrollmentValidationServiceFunctionalTest {
+
+    @Autowired
+    private EnrollmentValidationService service;
 
     @Autowired
     private CourseRepository courseRepository;
@@ -114,63 +137,78 @@ class EnrollmentValidationServiceFunctionalTest {
     private EnrollmentRepository enrollmentRepository;
 
     @Autowired
-    private EnrollmentValidationService realService;
+    private StudentRepository studentRepository;
 
-    @AfterAll
-    void resetDatabase() {
-        enrollmentRepository.deleteAll();
-        courseRepository.deleteAll();
-    }
+    private Student student;
+    private Term term;
+    private Course course;
 
     @BeforeEach
     void setupDatabase() {
         enrollmentRepository.deleteAll();
         courseRepository.deleteAll();
+        studentRepository.deleteAll();
+
+        student = new Student("123", "John Doe");
+        student.setCompletedCourses(new ArrayList<>());
+        studentRepository.save(student);
+
+        term = Term.current();
+
+        course = new Course("IFSP101", "Software Engineering", 4);
+        course.setAvailableSeats(5);
+        course.setSchedule(new ArrayList<>());
+        course.setPrerequisites(new ArrayList<>());
+        courseRepository.save(course);
     }
 
     @Test
-    @DisplayName("Should Reject Enrollment When Course Code Is Missing")
-    void shouldRejectEnrollmentWhenCourseCodeIsMissing() {
-        Course invalidCourse = new Course(null, "Programação I", "08:00-10:00", 4, List.of(), 40);
-        courseRepository.save(invalidCourse);
-
-        assertThatThrownBy(() -> realService.enrollStudent(invalidCourse.getId()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Course With Chosen Code Not Found");
-
-        assertThat(enrollmentRepository.findAll()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Should Allow Enrollment When Course Is Valid")
-    void shouldAllowEnrollmentWhenCourseIsValid() {
-        Course validCourse = new Course("ADS101", "Programação I", "08:00-10:00", 4, List.of(), 40);
-        courseRepository.save(validCourse);
-
-        realService.enrollStudent(validCourse.getId());
-
-        assertThat(enrollmentRepository.findAll()).hasSize(1);
-        assertThat(enrollmentRepository.findAll().getFirst().isCanceled()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Should Reject Enrollment When No Seats Are Available")
-    void shouldRejectEnrollmentWhenNoSeatsAreAvailable() {
-        Course fullCourse = new Course("ENG301", "Cálculo III", "14:00-16:00", 4, List.of(), 0);
-        courseRepository.save(fullCourse);
-
-        assertThatThrownBy(() -> realService.enrollStudent(fullCourse.getId()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No More Available Seats for This Courses");
-    }
-
-    @Test
-    @DisplayName("Should Reject Enrollment When Course ID Does Not Exist")
-    void shouldRejectEnrollmentWhenCourseIdDoesNotExist() {
-        assertThatThrownBy(() -> realService.enrollStudent(999L))
-                .isInstanceOf(IllegalArgumentException.class)
+    void shouldRejectWhenCourseIsNull() {
+        assertThatThrownBy(() -> service.validateCourseExists(null))
+                .isInstanceOf(BusinessRuleException.class)
                 .hasMessage("Course not found");
+    }
 
-        assertThat(enrollmentRepository.findAll()).isEmpty();
+    @Test
+    void shouldRejectWhenCourseCodeIsNull() {
+        course.setCode(null);
+        courseRepository.save(course);
+
+        assertThatThrownBy(() -> service.validateCourseExists(course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course code is missing or blank");
+    }
+
+    @Test
+    void shouldRejectWhenNoSeatsAvailable() {
+        course.setAvailableSeats(0);
+        courseRepository.save(course);
+
+        assertThatThrownBy(() -> service.validateSeatsAvailability(course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("No seats available");
+    }
+
+    @Test
+    void shouldRejectWhenPrerequisiteNotCompleted() {
+        course.setPrerequisites(new ArrayList<>(List.of("IFSP201")));
+        courseRepository.save(course);
+
+        assertThatThrownBy(() -> service.validatePrerequisites(student, course))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Missing prerequisite");
+    }
+
+    @Test
+    void shouldRejectWhenScheduleConflictDetected() {
+        Course c2 = new Course("IFSP102", "Algorithms", 4);
+        c2.setSchedule(List.of(new ClassSchedule("Monday", "11:00", "13:00")));
+        course.setSchedule(List.of(new ClassSchedule("Monday", "10:00", "12:00")));
+        courseRepository.save(c2);
+        enrollmentRepository.save(new Enrollment(student, c2, term));
+
+        assertThatThrownBy(() -> service.validateScheduleConflict(course, enrollmentRepository.findEnrollmentsByStudentAndTerm(student.getId(), term)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Schedule conflict detected");
     }
 }
