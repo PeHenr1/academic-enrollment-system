@@ -1,6 +1,8 @@
 package br.ifsp.demo.service;
 
 import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.infrastructure.persistence.CourseEntity;
+import br.ifsp.demo.mapper.CourseMapper;
 import br.ifsp.demo.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +18,13 @@ public class CourseQueryService {
     }
 
     public List<Course> getCourses() {
-        List<Course> courses = repository.findCourses();
+        List<CourseEntity> entities = repository.findCourses();
 
-        if (courses == null) {
+        if (entities == null) {
             throw new IllegalStateException("Failed to load offered courses");
         }
 
-        return courses.stream().toList();
+        return CourseMapper.toDomainList(entities);
     }
 
     public List<Course> getCoursesByFilter(String courseName, String shift) {

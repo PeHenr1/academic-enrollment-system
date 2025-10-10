@@ -1,8 +1,10 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
-import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.infrastructure.persistence.CourseEntity;
+import br.ifsp.demo.mapper.CourseMapper;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import org.springframework.stereotype.Service;
@@ -25,11 +27,12 @@ public class EnrollmentQueryService {
             throw new EnrollmentNotFoundException("Enrollment Not Found or Inactive");
         }
 
-        List<Course> courses = courseRepository.findByEnrollmentId(enrollmentId);
-        if (courses.isEmpty()) {
+        List<CourseEntity> entities = courseRepository.findByEnrollmentId(enrollmentId);
+
+        if (entities.isEmpty()) {
             throw new NoCoursesFoundException("No Courses Found For This Enrollment.");
         }
 
-        return courses;
+        return CourseMapper.toDomainList(entities);
     }
 }
