@@ -19,47 +19,15 @@ public class OfferedCourse {
         this.credits = credits;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getCredits() {
-        return credits;
-    }
-
-    public int getAvailableSeats() {
-        return availableSeats;
-    }
-
-    public void setAvailableSeats(int availableSeats) {
-        this.availableSeats = availableSeats;
-    }
-
-    public List<ClassSchedule> getSchedule() {
-        return schedule;
-    }
-
-    public void setSchedule(List<ClassSchedule> schedule) {
-        this.schedule = schedule;
-    }
-
-    public List<String> getPrerequisites() {
-        return prerequisites;
-    }
-
-    public void setPrerequisites(List<String> prerequisites) {
-        this.prerequisites = prerequisites;
-    }
-
-    public Term getTerm() {
-        return term;
-    }
-
-    public void setTerm(Term term) {
-        this.term = term;
-    }
+    public String getCode() { return code; }
+    public String getName() { return name; }
+    public int getCredits() { return credits; }
+    public int getAvailableSeats() { return availableSeats; }
+    public void setAvailableSeats(int availableSeats) { this.availableSeats = availableSeats; }
+    public List<ClassSchedule> getSchedule() { return schedule; }
+    public void setSchedule(List<ClassSchedule> schedule) { this.schedule = schedule; }
+    public List<String> getPrerequisites() { return prerequisites; }
+    public void setPrerequisites(List<String> prerequisites) { this.prerequisites = prerequisites; }
+    public Term getTerm() { return term; }
+    public void setTerm(Term term) { this.term = term; }
 }
