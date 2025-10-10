@@ -1,40 +1,19 @@
 package br.ifsp.demo.domain;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
-@Entity
-@Table(name = "courses")
 public class Course {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String code;
     private String name;
     private int credits;
     private int availableSeats;
     private String shift;
-
-    @ElementCollection
-    @CollectionTable(name = "course_schedules", joinColumns = @JoinColumn(name = "course_id"))
     private List<ClassSchedule> schedule = new ArrayList<>();
-
-    @ElementCollection
-    @CollectionTable(name = "course_prerequisites", joinColumns = @JoinColumn(name = "course_id"))
     private List<String> prerequisites = new ArrayList<>();
-
-    @Embedded
     private Term term = Term.current();
-    @ManyToOne
-    @JoinColumn(name = "enrollment_id")
     private Enrollment enrollment;
 
     public Course() {}
@@ -54,16 +33,12 @@ public class Course {
         this.availableSeats = availableSeats;
     }
 
-    public boolean hasAvailableSeats() {
-        return availableSeats > 0;
-    }
+    public boolean hasAvailableSeats() { return availableSeats > 0; }
 
     public boolean hasConflictingScheduleWith(Course other) {
         for (ClassSchedule s1 : this.schedule) {
             for (ClassSchedule s2 : other.schedule) {
-                if (s1.conflictsWith(s2)) {
-                    return true;
-                }
+                if (s1.conflictsWith(s2)) return true;
             }
         }
         return false;
@@ -74,10 +49,28 @@ public class Course {
     }
 
     public void decreaseSeat() {
-        if (availableSeats > 0) {
-            availableSeats--;
-        } else {
-            throw new IllegalStateException("No seats available");
-        }
+        if (availableSeats > 0) availableSeats--;
+        else throw new IllegalStateException("No seats available");
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public int getCredits() { return credits; }
+    public void setCredits(int credits) { this.credits = credits; }
+    public int getAvailableSeats() { return availableSeats; }
+    public void setAvailableSeats(int availableSeats) { this.availableSeats = availableSeats; }
+    public String getShift() { return shift; }
+    public void setShift(String shift) { this.shift = shift; }
+    public List<ClassSchedule> getSchedule() { return schedule; }
+    public void setSchedule(List<ClassSchedule> schedule) { this.schedule = schedule; }
+    public List<String> getPrerequisites() { return prerequisites; }
+    public void setPrerequisites(List<String> prerequisites) { this.prerequisites = prerequisites; }
+    public Term getTerm() { return term; }
+    public void setTerm(Term term) { this.term = term; }
+    public Enrollment getEnrollment() { return enrollment; }
+    public void setEnrollment(Enrollment enrollment) { this.enrollment = enrollment; }
 }
