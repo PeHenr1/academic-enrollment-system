@@ -33,6 +33,9 @@ public class Course {
 
     @Embedded
     private Term term = Term.current();
+    @ManyToOne
+    @JoinColumn(name = "enrollment_id")
+    private Enrollment enrollment;
 
     public Course() {}
 

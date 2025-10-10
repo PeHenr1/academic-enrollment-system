@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "enrollment")
@@ -25,7 +26,7 @@ public class Enrollment {
     private Course course;
 
     @Embedded
-    private Term term; // agora usa Term
+    private Term term;
 
     private LocalDate cancellationDeadline;
 
@@ -37,6 +38,8 @@ public class Enrollment {
         this.term = term;
         this.cancellationDeadline = LocalDate.now().plusDays(3);
     }
+    @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Course> courses;
 
     public void setDeadline(LocalDate date) {
         this.cancellationDeadline = date;
