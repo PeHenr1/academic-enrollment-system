@@ -108,6 +108,7 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Return Multiple Courses for Enrollment")
     void shouldReturnMultipleCourses() {
         var enrollment = enrollmentRepository.save(new Enrollment());
@@ -128,6 +129,7 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
     void shouldThrowNoCoursesFoundException() {
         var enrollment = enrollmentRepository.save(new Enrollment());
@@ -138,6 +140,7 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
     void shouldThrowEnrollmentNotFoundException() {
         assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
