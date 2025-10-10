@@ -1,14 +1,18 @@
 package br.ifsp.demo.domain;
 
+import jakarta.persistence.Embeddable;
 import java.time.Year;
 
+@Embeddable
 public class Term {
+    private int year;
+    private int semester;
 
-    private final int year;
-    private final int semester; // 1 or 2
+    public int getSemester() {
+        return semester;
+    }
 
-    public Term(int year, int semester) {
-        this.year = year;
+    public void setSemester(int semester) {
         this.semester = semester;
     }
 
@@ -16,8 +20,15 @@ public class Term {
         return year;
     }
 
-    public int getSemester() {
-        return semester;
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    protected Term() {}
+
+    public Term(int year, int semester) {
+        this.year = year;
+        this.semester = semester;
     }
 
     public static Term current() {
@@ -25,7 +36,7 @@ public class Term {
         return new Term(Year.now().getValue(), currentSemester);
     }
 
-    @Override
+@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Term)) return false;

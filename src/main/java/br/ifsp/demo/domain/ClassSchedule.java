@@ -1,12 +1,16 @@
 package br.ifsp.demo.domain;
 
+import jakarta.persistence.Embeddable;
 import java.time.LocalTime;
 
+@Embeddable
 public class ClassSchedule {
 
-    private final String dayOfWeek;
-    private final LocalTime startTime;
-    private final LocalTime endTime;
+    private String dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+
+    protected ClassSchedule() {} // JPA requirement
 
     public ClassSchedule(String dayOfWeek, String start, String end) {
         this.dayOfWeek = dayOfWeek;
@@ -14,7 +18,7 @@ public class ClassSchedule {
         this.endTime = LocalTime.parse(end);
     }
 
-    public String getDayOfWeek() {
+public String getDayOfWeek() {
         return dayOfWeek;
     }
 

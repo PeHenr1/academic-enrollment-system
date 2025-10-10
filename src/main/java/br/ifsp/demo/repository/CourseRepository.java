@@ -1,11 +1,12 @@
 package br.ifsp.demo.repository;
 
-import br.ifsp.demo.domain.OfferedCourse;
-import java.util.List;
+import br.ifsp.demo.domain.Course;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 
-public interface CourseRepository {
-    Optional<OfferedCourse> findByCode(String courseCode);
-
-    List<OfferedCourse> findCourses();
+@Repository
+public interface CourseRepository extends JpaRepository<Course, Long> {
+    Optional<Course> findByCode(String code);
 }
