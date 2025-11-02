@@ -230,4 +230,15 @@ class CourseQueryServiceStructuralTest {
         assertTrue(result.stream().allMatch(c -> c.getName().equals("ADS")));
         assertEquals(2, result.size());
     }
+
+    @Test
+    @DisplayName("Should filter only by shift when course name is null")
+    void shouldFilterOnlyByShiftWhenNameIsNull() {
+        when(repository.findCourses()).thenReturn(List.of(course1, course2, course3));
+
+        var result = service.getCoursesByFilter(null, "Diurno");
+
+        assertTrue(result.stream().allMatch(c -> c.getShift().equals("Diurno")));
+        assertEquals(2, result.size());
+    }
 }
