@@ -68,7 +68,7 @@ class EnrollmentQueryServiceTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("No Courses Found For This Enrollment.");
+                .hasMessage("No courses found for this enrollment");
     }
 
     @Test
@@ -79,7 +79,18 @@ class EnrollmentQueryServiceTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
                 .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Enrollment Not Found or Inactive");
+                .hasMessage("Enrollment not found or inactive");
+    }
+
+    @Test
+    @DisplayName("Should Reject When Enrollment ID Is Null")
+    void shouldRejectWhenEnrollmentIdIsNull() {
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("ID cannot be null");
+
+        verifyNoInteractions(enrollmentRepository);
+        verifyNoInteractions(courseRepository);
     }
 }
 
@@ -121,6 +132,7 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Return Multiple Courses for Enrollment")
     void shouldReturnMultipleCourses() {
         Course math = new Course("MAT", "Math", 4);
@@ -144,6 +156,7 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
     void shouldThrowNoCoursesFoundException() {
         Student testStudent = new Student("NOCOURSES", "Student Without Courses");
@@ -165,14 +178,24 @@ class EnrollmentQueryServiceFunctionalTest {
 
         assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentWithNoCourses.getId()))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("No Courses Found For This Enrollment.");
+                .hasMessage("No courses found for this enrollment");
     }
 
     @Test
+    @Tag("Functional")
     @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
     void shouldThrowEnrollmentNotFoundException() {
         assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
                 .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Enrollment Not Found or Inactive");
+                .hasMessage("Enrollment not found or inactive");
+    }
+
+    @Test
+    @Tag("Functional")
+    @DisplayName("Should Reject When Enrollment Is Null or Not Found")
+    void shouldRejectWhenEnrollmentIsNullOrNotFound() {
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("ID cannot be null");
     }
 }
