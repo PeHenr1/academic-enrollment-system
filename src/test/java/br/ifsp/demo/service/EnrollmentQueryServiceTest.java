@@ -6,6 +6,7 @@ import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import br.ifsp.demo.repository.StudentRepository;
+import br.ifsp.demo.util.TestUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,27 +26,28 @@ class EnrollmentQueryServiceTest {
     private CourseRepository courseRepository;
     private EnrollmentQueryService service;
 
+    private final Long enrollmentId = 1L;
+    private Course math;
+    private Course physics;
+
     @BeforeEach
     void setup() {
         enrollmentRepository = mock(EnrollmentRepository.class);
         courseRepository = mock(CourseRepository.class);
         service = new EnrollmentQueryService(enrollmentRepository, courseRepository);
+
+        math = TestUtils.createCourse("MAT", "Math", 4);
+        math.setSchedule(List.of(new ClassSchedule("Monday", "08:00", "10:00")));
+        math.setAvailableSeats(30);
+
+        physics = TestUtils.createCourse("PHY", "Physics", 3);
+        physics.setSchedule(List.of(new ClassSchedule("Monday", "10:00", "12:00")));
+        physics.setAvailableSeats(40);
     }
 
     @Test
     @DisplayName("Should Return Courses for Enrollment")
     void shouldReturnCoursesForEnrollment() {
-        Long enrollmentId = 1L;
-        Course math = new Course("MAT", "Math", 4);
-        Course physics = new Course("PHY", "Physics", 3);
-
-        math.setSchedule(List.of(new ClassSchedule("Monday", "08:00", "10:00")));
-        math.setAvailableSeats(30);
-
-        physics.setSchedule(List.of(new ClassSchedule("Monday", "10:00", "12:00")));
-        physics.setAvailableSeats(40);
-
-
         when(enrollmentRepository.existsById(enrollmentId)).thenReturn(true);
         when(courseRepository.findByEnrollmentId(enrollmentId)).thenReturn(List.of(math, physics));
 
@@ -62,7 +64,6 @@ class EnrollmentQueryServiceTest {
     @Test
     @DisplayName("Should Throw NoCoursesFoundException When No Courses")
     void shouldThrowNoCoursesFoundException() {
-        Long enrollmentId = 2L;
         when(enrollmentRepository.existsById(enrollmentId)).thenReturn(true);
         when(courseRepository.findByEnrollmentId(enrollmentId)).thenReturn(List.of());
 
@@ -74,10 +75,10 @@ class EnrollmentQueryServiceTest {
     @Test
     @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
     void shouldThrowEnrollmentNotFoundException() {
-        Long enrollmentId = 999L;
-        when(enrollmentRepository.existsById(enrollmentId)).thenReturn(false);
+        Long invalidId = 999L;
+        when(enrollmentRepository.existsById(invalidId)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(invalidId))
                 .isInstanceOf(EnrollmentNotFoundException.class)
                 .hasMessage("Enrollment not found or inactive");
     }
@@ -115,36 +116,38 @@ class EnrollmentQueryServiceFunctionalTest {
     private Enrollment enrollment;
     private Course initialCourse;
 
+    private Course math;
+    private Course physics;
+
     @BeforeEach
     void setup() {
         enrollmentRepository.deleteAll();
         courseRepository.deleteAll();
         studentRepository.deleteAll();
 
-        student = studentRepository.save(new Student("123", "John Doe"));
+        student = studentRepository.save(TestUtils.createDefaultStudent());
 
-        initialCourse = new Course("INIT", "Initial Course", 1);
+        initialCourse = TestUtils.createCourse("INIT", "Initial Course", 1);
         initialCourse.setAvailableSeats(1);
         initialCourse.setSchedule(List.of(new ClassSchedule("Monday", "08:00", "09:00")));
         initialCourse = courseRepository.save(initialCourse);
 
         enrollment = enrollmentRepository.save(new Enrollment(student, initialCourse, Term.current()));
-    }
 
-    @Test
-    @Tag("Functional")
-    @DisplayName("Should Return Multiple Courses for Enrollment")
-    void shouldReturnMultipleCourses() {
-        Course math = new Course("MAT", "Math", 4);
+        math = TestUtils.createCourse("MAT", "Math", 4);
         math.setSchedule(List.of(new ClassSchedule("Monday", "09:00", "11:00")));
         math.setAvailableSeats(30);
         math.setEnrollment(enrollment);
 
-        Course physics = new Course("PHY", "Physics", 3);
+        physics = TestUtils.createCourse("PHY", "Physics", 3);
         physics.setSchedule(List.of(new ClassSchedule("Monday", "11:00", "13:00")));
         physics.setAvailableSeats(40);
         physics.setEnrollment(enrollment);
+    }
 
+    @Test
+    @DisplayName("Should Return Multiple Courses for Enrollment")
+    void shouldReturnMultipleCourses() {
         courseRepository.saveAll(List.of(math, physics));
 
         List<Course> result = service.getCoursesByEnrollment(enrollment.getId());
@@ -156,20 +159,15 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
-    @Tag("Functional")
     @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
     void shouldThrowNoCoursesFoundException() {
-        Student testStudent = new Student("NOCOURSES", "Student Without Courses");
-        testStudent = studentRepository.save(testStudent);
+        Student noCoursesStudent = studentRepository.save(TestUtils.createStudent("NOCOURSES", "Student Without Courses"));
 
-        Course tempCourse = new Course("TEMP", "Temporary Course", 1);
+        Course tempCourse = TestUtils.createCourse("TEMP", "Temporary Course", 1);
         tempCourse.setAvailableSeats(1);
         tempCourse = courseRepository.save(tempCourse);
 
-        Enrollment enrollmentWithNoCourses = enrollmentRepository.save(
-                new Enrollment(testStudent, tempCourse, Term.current())
-        );
-
+        Enrollment enrollmentWithNoCourses = enrollmentRepository.save(new Enrollment(noCoursesStudent, tempCourse, Term.current()));
         tempCourse.setEnrollment(null);
         courseRepository.save(tempCourse);
 
@@ -182,16 +180,15 @@ class EnrollmentQueryServiceFunctionalTest {
     }
 
     @Test
-    @Tag("Functional")
     @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
     void shouldThrowEnrollmentNotFoundException() {
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
+        Long invalidId = 999L;
+        assertThatThrownBy(() -> service.getCoursesByEnrollment(invalidId))
                 .isInstanceOf(EnrollmentNotFoundException.class)
                 .hasMessage("Enrollment not found or inactive");
     }
 
     @Test
-    @Tag("Functional")
     @DisplayName("Should Reject When Enrollment Is Null or Not Found")
     void shouldRejectWhenEnrollmentIsNullOrNotFound() {
         assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
