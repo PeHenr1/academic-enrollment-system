@@ -71,6 +71,7 @@ class EnrollStudentServiceTest {
     }
 
     @Test
+    @DisplayName("Should Throw When Prerequisite Not Completed")
     void shouldThrowWhenPrerequisiteNotCompleted() {
         List<String> courseCodes = List.of(courseCode);
         doThrow(new BusinessRuleException("Missing prerequisite"))
@@ -82,6 +83,7 @@ class EnrollStudentServiceTest {
     }
 
     @Test
+    @DisplayName("Should Throw When Course Already Completed")
     void shouldThrowWhenCourseAlreadyCompleted() {
         List<String> courseCodes = List.of(courseCode);
         when(student.getCompletedCourses()).thenReturn(List.of(courseCode));
@@ -95,6 +97,7 @@ class EnrollStudentServiceTest {
     }
 
     @Test
+    @DisplayName("Should Throw When No Seats Available")
     void shouldThrowWhenNoSeatsAvailable() {
         List<String> courseCodes = List.of(courseCode);
         doThrow(new BusinessRuleException("No seats available"))
@@ -149,6 +152,7 @@ class EnrollStudentServiceFunctionalTest {
     }
 
     @Test
+    @DisplayName("Should Enroll Student Successfully")
     void shouldEnrollStudentSuccessfully() {
         enrollStudentService.enroll(student, List.of(course.getCode()), term);
 
@@ -158,6 +162,7 @@ class EnrollStudentServiceFunctionalTest {
     }
 
     @Test
+    @DisplayName("Should Throw When No Seats Available")
     void shouldThrowWhenNoSeatsAvailable() {
         course.setAvailableSeats(0);
         courseRepository.save(course);
@@ -168,6 +173,7 @@ class EnrollStudentServiceFunctionalTest {
     }
 
     @Test
+    @DisplayName("Should Throw When Prerequisite Not Completed")
     void shouldThrowWhenPrerequisiteNotCompleted() {
         course.setPrerequisites(new ArrayList<>(List.of("IFSP201")));
         courseRepository.save(course);
@@ -178,6 +184,7 @@ class EnrollStudentServiceFunctionalTest {
     }
 
     @Test
+    @DisplayName("Should Throw When Schedule Conflicts")
     void shouldThrowWhenScheduleConflicts() {
         Course c1 = TestUtils.createCourse("IFSP102", "Algorithms", 4);
         c1.setSchedule(new ArrayList<>(List.of(new ClassSchedule("Monday", "11:00", "13:00"))));
