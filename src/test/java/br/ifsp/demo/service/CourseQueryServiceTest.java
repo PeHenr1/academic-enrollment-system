@@ -188,3 +188,46 @@ class CourseQueryServiceFunctionalTest {
         assertTrue(filtered.isEmpty(), "Expected empty list when no course matches filters");
     }
 }
+
+@Tag("Structural")
+@Tag("UnitTest")
+class CourseQueryServiceStructuralTest {
+
+    @Mock
+    private CourseRepository repository;
+
+    private CourseQueryService service;
+
+    private Course course1;
+    private Course course2;
+    private Course course3;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        service = new CourseQueryService(repository);
+
+        course1 = TestUtils.createCourse("ADS101", "Programação I", 4);
+        course1.setName("ADS");
+        course1.setShift("Noturno");
+
+        course2 = TestUtils.createCourse("BES101", "Banco de Dados", 4);
+        course2.setName("BES");
+        course2.setShift("Diurno");
+
+        course3 = TestUtils.createCourse("ADS201", "Engenharia de Software", 4);
+        course3.setName("ADS");
+        course3.setShift("Diurno");
+    }
+
+    @Test
+    @DisplayName("Should filter only by course name when shift is null")
+    void shouldFilterOnlyByNameWhenShiftIsNull() {
+        when(repository.findCourses()).thenReturn(List.of(course1, course2, course3));
+
+        var result = service.getCoursesByFilter("ADS", null);
+
+        assertTrue(result.stream().allMatch(c -> c.getName().equals("ADS")));
+        assertEquals(2, result.size());
+    }
+}
