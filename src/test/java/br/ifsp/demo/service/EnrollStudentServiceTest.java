@@ -6,10 +6,7 @@ import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import br.ifsp.demo.repository.StudentRepository;
 import br.ifsp.demo.util.TestUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -198,5 +196,94 @@ class EnrollStudentServiceFunctionalTest {
         assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of(course.getCode()), term))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Schedule conflict detected");
+    }
+}
+
+@Tag("Structural")
+@Tag("UnitTest")
+class EnrollStudentServiceStructuralTest {
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
+
+    @Mock
+    private EnrollmentValidationService validationService;
+
+    @InjectMocks
+    private EnrollStudentService enrollStudentService;
+
+    private Student student;
+    private Term term;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        student = mock(Student.class);
+        when(student.getId()).thenReturn("5L");
+        when(student.getCompletedCourses()).thenReturn(new ArrayList<>());
+
+        term = Term.current();
+
+        String courseCode1 = "IFSP101";
+        Course course1 = TestUtils.createCourse(courseCode1, "Intro to Programming", 4);
+        course1.setId(1L);
+        course1.setAvailableSeats(10);
+
+        String courseCode2 = "IFSP102";
+        Course course2 = TestUtils.createCourse(courseCode2, "Data Structures", 6);
+        course2.setId(2L);
+        course2.setAvailableSeats(5);
+
+        when(courseRepository.findByCode(courseCode1)).thenReturn(Optional.of(course1));
+        when(courseRepository.findByCode(courseCode2)).thenReturn(Optional.of(course2));
+
+        doNothing().when(validationService).validateCourseExists(any(Course.class));
+        doNothing().when(validationService).validateCourseAlreadyCompleted(any(Student.class), any(Course.class));
+        doNothing().when(validationService).validatePrerequisites(any(Student.class), any(Course.class));
+        doNothing().when(validationService).validateCreditLimit(any(Student.class), any(Course.class), any(Term.class), anyList());
+        doNothing().when(validationService).validateScheduleConflict(any(Course.class), anyList());
+        doNothing().when(validationService).validateSeatsAvailability(any(Course.class));
+
+        when(enrollmentRepository.findEnrollmentsByStudentAndTerm(anyString(), any(Term.class)))
+                .thenReturn(new ArrayList<>());
+    }
+
+    @Test
+    @DisplayName("Should Throw When Course List Is Null")
+    void shouldThrowWhenCourseListIsNull() {
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, null, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("No courses provided for enrollment");
+
+        verifyNoInteractions(courseRepository, enrollmentRepository);
+    }
+
+    @Test
+    @DisplayName("Should Throw When Course List Is Empty")
+    void shouldThrowWhenCourseListIsEmpty() {
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, Collections.emptyList(), term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("No courses provided for enrollment");
+
+        verifyNoInteractions(courseRepository, enrollmentRepository);
+    }
+
+    @Test
+    @DisplayName("Should Throw When Course Is Not Found")
+    void shouldThrowWhenCourseIsNotFound() {
+        String nonExistentCode = "IFSP404";
+        when(courseRepository.findByCode(nonExistentCode)).thenReturn(Optional.empty());
+        List<String> courseCodes = List.of(nonExistentCode);
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, courseCodes, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Course not found: " + nonExistentCode);
+
+        verify(courseRepository, times(1)).findByCode(nonExistentCode);
+        verify(enrollmentRepository, never()).save(any());
     }
 }
