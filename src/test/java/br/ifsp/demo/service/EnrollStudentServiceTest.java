@@ -107,7 +107,7 @@ class EnrollStudentServiceTest {
     }
 }
 
-
+@Tag("UnitTest")
 @Tag("Functional")
 @SpringBootTest
 @Transactional
@@ -199,8 +199,8 @@ class EnrollStudentServiceFunctionalTest {
     }
 }
 
-@Tag("Structural")
 @Tag("UnitTest")
+@Tag("Structural")
 class EnrollStudentServiceStructuralTest {
 
     @Mock
