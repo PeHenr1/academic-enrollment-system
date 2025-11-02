@@ -5,6 +5,7 @@ import br.ifsp.demo.domain.Enrollment;
 import br.ifsp.demo.domain.Student;
 import br.ifsp.demo.domain.Term;
 import br.ifsp.demo.exception.BusinessRuleException;
+import br.ifsp.demo.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -38,15 +39,12 @@ class EnrollmentValidationServiceTest {
         MockitoAnnotations.openMocks(this);
         service = new EnrollmentValidationService();
 
-        student = new Student("123", "John Doe");
-        student.setCompletedCourses(new ArrayList<>());
-
-        term = new Term(2025, 1);
-
-        course = new Course("IFSP101", "Software Engineering", 4);
+        student = TestUtils.createStudentWithCompletedCourses("123", "John Doe", List.of());
+        term = TestUtils.createDefaultTerm();
+        course = TestUtils.createCourse("IFSP101", "Software Engineering", 4);
         course.setAvailableSeats(5);
-        course.setSchedule(new ArrayList<>());
-        course.setPrerequisites(new ArrayList<>());
+        course.setSchedule(List.of());
+        course.setPrerequisites(List.of());
     }
 
     @Test
@@ -82,7 +80,7 @@ class EnrollmentValidationServiceTest {
 
     @Test
     void shouldRejectWhenCourseAlreadyCompleted() {
-        student.getCompletedCourses().add("IFSP101");
+        student = TestUtils.createStudentWithCompletedCourses("123", "John Doe", List.of("IFSP101"));
         assertThatThrownBy(() -> service.validateCourseAlreadyCompleted(student, course))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Course already completed");
@@ -90,7 +88,7 @@ class EnrollmentValidationServiceTest {
 
     @Test
     void shouldRejectWhenPrerequisiteNotCompleted() {
-        course.setPrerequisites(List.of("IFSP201"));
+        course = TestUtils.createCourseWithPrerequisites("IFSP101", "Software Engineering", 4, List.of("IFSP201"));
         assertThatThrownBy(() -> service.validatePrerequisites(student, course))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Missing prerequisite");
@@ -99,7 +97,7 @@ class EnrollmentValidationServiceTest {
     @Test
     void shouldRejectWhenCreditLimitExceeded() {
         course.setCredits(15);
-        Enrollment existingEnrollment = new Enrollment(student, new Course("IFSP102", "Algorithms", 10), term);
+        Enrollment existingEnrollment = TestUtils.createEnrollment(student, TestUtils.createCourse("IFSP102", "Algorithms", 10), term);
         List<Enrollment> currentEnrollments = List.of(existingEnrollment);
 
         assertThatThrownBy(() -> service.validateCreditLimit(student, course, term, currentEnrollments))
@@ -109,10 +107,13 @@ class EnrollmentValidationServiceTest {
 
     @Test
     void shouldRejectWhenScheduleConflictDetected() {
-        course.setSchedule(List.of(new br.ifsp.demo.domain.ClassSchedule("Monday", "10:00", "12:00")));
-        Course enrolledCourse = new Course("IFSP102", "Algorithms", 4);
-        enrolledCourse.setSchedule(List.of(new br.ifsp.demo.domain.ClassSchedule("Monday", "11:00", "13:00")));
-        Enrollment existingEnrollment = new Enrollment(student, enrolledCourse, term);
+        course = TestUtils.createCourseWithSchedule("IFSP101", "Software Engineering", 4,
+                List.of(TestUtils.createClassSchedule("Monday", "10:00", "12:00")));
+
+        Course enrolledCourse = TestUtils.createCourseWithSchedule("IFSP102", "Algorithms", 4,
+                List.of(TestUtils.createClassSchedule("Monday", "11:00", "13:00")));
+
+        Enrollment existingEnrollment = TestUtils.createEnrollment(student, enrolledCourse, term);
 
         assertThatThrownBy(() -> service.validateScheduleConflict(course, List.of(existingEnrollment)))
                 .isInstanceOf(BusinessRuleException.class)
@@ -149,16 +150,15 @@ class EnrollmentValidationServiceFunctionalTest {
         courseRepository.deleteAll();
         studentRepository.deleteAll();
 
-        student = new Student("123", "John Doe");
-        student.setCompletedCourses(new ArrayList<>());
+        student = TestUtils.createStudentWithCompletedCourses("123", "John Doe", List.of());
         studentRepository.save(student);
 
         term = Term.current();
 
-        course = new Course("IFSP101", "Software Engineering", 4);
+        course = TestUtils.createCourse("IFSP101", "Software Engineering", 4);
         course.setAvailableSeats(5);
-        course.setSchedule(new ArrayList<>());
-        course.setPrerequisites(new ArrayList<>());
+        course.setSchedule(List.of());
+        course.setPrerequisites(List.of());
         courseRepository.save(course);
     }
 
@@ -191,7 +191,7 @@ class EnrollmentValidationServiceFunctionalTest {
 
     @Test
     void shouldRejectWhenPrerequisiteNotCompleted() {
-        course.setPrerequisites(new ArrayList<>(List.of("IFSP201")));
+        course = TestUtils.createCourseWithPrerequisites("IFSP101", "Software Engineering", 4, List.of("IFSP201"));
         courseRepository.save(course);
 
         assertThatThrownBy(() -> service.validatePrerequisites(student, course))
@@ -201,11 +201,11 @@ class EnrollmentValidationServiceFunctionalTest {
 
     @Test
     void shouldRejectWhenScheduleConflictDetected() {
-        Course c2 = new Course("IFSP102", "Algorithms", 4);
-        c2.setSchedule(List.of(new ClassSchedule("Monday", "11:00", "13:00")));
-        course.setSchedule(List.of(new ClassSchedule("Monday", "10:00", "12:00")));
+        Course c2 = TestUtils.createCourseWithSchedule("IFSP102", "Algorithms", 4,
+                List.of(TestUtils.createClassSchedule("Monday", "11:00", "13:00")));
+        course.setSchedule(List.of(TestUtils.createClassSchedule("Monday", "10:00", "12:00")));
         courseRepository.save(c2);
-        enrollmentRepository.save(new Enrollment(student, c2, term));
+        enrollmentRepository.save(TestUtils.createEnrollment(student, c2, term));
 
         assertThatThrownBy(() -> service.validateScheduleConflict(course, enrollmentRepository.findEnrollmentsByStudentAndTerm(student.getId(), term)))
                 .isInstanceOf(BusinessRuleException.class)
