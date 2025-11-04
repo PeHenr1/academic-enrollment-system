@@ -1,5 +1,7 @@
 package br.ifsp.demo.service;
 
+import br.ifsp.demo.domain.Enrollment;
+import br.ifsp.demo.domain.Term;
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.domain.Course;
@@ -20,14 +22,17 @@ public class EnrollmentQueryService {
         this.courseRepository = courseRepository;
     }
 
-    public List<Course> getCoursesByEnrollment(Long enrollmentId) {
-        if (enrollmentId == null) throw new IllegalArgumentException("ID cannot be null");
+   public List<Enrollment> getEnrollmentsByStudent(String studentId, Term term) {
+        if (studentId == null || term == null) {
+            throw new IllegalArgumentException("Student ID and Term cannot be null");
+        }
 
-        if (!enrollmentRepository.existsById(enrollmentId)) throw new EnrollmentNotFoundException("Enrollment not found or inactive");
+       List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentAndTerm(studentId, term);
 
-        List<Course> courses = courseRepository.findByEnrollmentId(enrollmentId);
-        if (courses.isEmpty()) throw new NoCoursesFoundException("No courses found for this enrollment");
+        if (enrollments.isEmpty()) {
+            throw new NoCoursesFoundException("No enrollments found for this student this term.");
+        }
 
-        return courses;
+        return enrollments;
     }
 }

@@ -80,4 +80,8 @@ public class Course {
             throw new IllegalStateException("No seats available");
         }
     }
+
+    public void increaseSeat() {
+        this.availableSeats++;
+    }
 }

@@ -1,5 +1,6 @@
 package br.ifsp.demo.security.user;
 
+import br.ifsp.demo.domain.Student;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -23,17 +24,25 @@ public class User implements UserDetails {
     @JdbcTypeCode(Types.VARCHAR)
     @NonNull @Column(nullable = false)
     private UUID id;
+
     @NonNull @Column(nullable = false)
     private String name;
+
     @NonNull @Column(nullable = false)
     private String lastname;
-    @NonNull @Column(nullable = false)
+
+    @NonNull @Column(nullable = false, unique = true)
     private String email;
+
     @NonNull @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToOne
+    @JoinColumn(name = "student_id", referencedColumnName = "id", unique = true)
+    private Student student;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

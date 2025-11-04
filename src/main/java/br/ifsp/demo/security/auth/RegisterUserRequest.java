@@ -10,5 +10,7 @@ public record RegisterUserRequest(
         @Schema(description = "Email to be used as login", example = "know.nothing@snow.com")
         String email,
         @Schema(description = "Password", example = "n3243#kFdj$")
-        String password
+        String password,
+        @Schema(description = "Student ID (RA)", example = "SP123456")
+        String studentId
 ) {}
