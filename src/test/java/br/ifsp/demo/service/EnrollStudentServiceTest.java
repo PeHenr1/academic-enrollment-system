@@ -7,6 +7,7 @@ import br.ifsp.demo.repository.EnrollmentRepository;
 import br.ifsp.demo.repository.StudentRepository;
 import br.ifsp.demo.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -52,15 +53,19 @@ class EnrollStudentServiceTest {
 
         student = mock(Student.class);
         when(student.getCompletedCourses()).thenReturn(new ArrayList<>());
+        when(student.getId()).thenReturn("SP123");
 
         term = Term.current();
 
-        course = TestUtils.createCourse(courseCode, "Intro to Programming", 4);
-        course.setId(1L);
-        course.setPrerequisites(List.of("IFSP100"));
-        course.setAvailableSeats(10);
+        course = mock(Course.class);
+        when(course.getCode()).thenReturn(courseCode);
+        when(course.getPrerequisites()).thenReturn(List.of("IFSP100"));
+        when(course.getAvailableSeats()).thenReturn(10);
 
         when(courseRepository.findByCode(courseCode)).thenReturn(Optional.of(course));
+
+        when(enrollmentRepository.findEnrollmentsByStudentAndTerm(anyString(), any(Term.class)))
+                .thenReturn(new ArrayList<>());
 
         doNothing().when(validationService).validateCourseExists(course);
         doNothing().when(validationService).validateCourseAlreadyCompleted(student, course);
@@ -103,6 +108,88 @@ class EnrollStudentServiceTest {
         assertThatThrownBy(() -> enrollStudentService.enroll(student, courseCodes, term))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("No seats available");
+    }
+
+    @Test
+    @DisplayName("Should successfully enroll student and decrease seat (Kills L52 mutant)")
+    void shouldEnrollStudentSuccessfullyAndDecreaseSeat() {
+        List<String> courseCodes = List.of(courseCode);
+
+        enrollStudentService.enroll(student, courseCodes, term);
+
+        verify(validationService).validateCourseExists(course);
+        verify(validationService).validateCourseAlreadyCompleted(student, course);
+        verify(validationService).validatePrerequisites(student, course);
+        verify(validationService).validateCreditLimit(student, course, term, new ArrayList<>());
+        verify(validationService).validateScheduleConflict(course, new ArrayList<>());
+        verify(validationService).validateSeatsAvailability(course);
+
+        verify(enrollmentRepository).save(any(Enrollment.class));
+        verify(course).decreaseSeat();
+        verify(courseRepository).save(course);
+    }
+
+    @Test
+    @DisplayName("Should throw when course list is null (Kills L30 mutant)")
+    void shouldThrowWhenCourseListIsNull() {
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, null, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("No courses provided for enrollment");
+    }
+
+    @Test
+    @DisplayName("Should throw when course list is empty (Kills L30 mutant)")
+    void shouldThrowWhenCourseListIsEmpty() {
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of(), term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("No courses provided for enrollment");
+    }
+
+    @Test
+    @DisplayName("Should throw when course code is not found (Kills L36 mutant)")
+    void shouldThrowWhenCourseCodeNotFound() {
+        String invalidCode = "INVALID999";
+        when(courseRepository.findByCode(invalidCode)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, List.of(invalidCode), term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course not found: " + invalidCode);
+    }
+
+    @Test
+    @DisplayName("Should throw when validateCourseExists fails (Kills L38 mutant)")
+    void shouldThrowWhenValidateCourseExistsFails() {
+        List<String> courseCodes = List.of(courseCode);
+        doThrow(new BusinessRuleException("Course does not exist"))
+                .when(validationService).validateCourseExists(course);
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, courseCodes, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course does not exist");
+    }
+
+    @Test
+    @DisplayName("Should throw when credit limit is exceeded (Kills L45 mutant)")
+    void shouldThrowWhenCreditLimitExceeded() {
+        List<String> courseCodes = List.of(courseCode);
+        doThrow(new BusinessRuleException("Maximum credits exceeded"))
+                .when(validationService).validateCreditLimit(any(), any(), any(), any());
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, courseCodes, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Maximum credits exceeded");
+    }
+
+    @Test
+    @DisplayName("Should throw when schedule conflicts")
+    void shouldThrowWhenScheduleConflicts() {
+        List<String> courseCodes = List.of(courseCode);
+        doThrow(new BusinessRuleException("Schedule conflict"))
+                .when(validationService).validateScheduleConflict(any(), any());
+
+        assertThatThrownBy(() -> enrollStudentService.enroll(student, courseCodes, term))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Schedule conflict");
     }
 }
 
@@ -181,6 +268,7 @@ class EnrollStudentServiceFunctionalTest {
     void shouldThrowWhenScheduleConflicts() {
         Course c1 = TestUtils.createCourse("IFSP102", "Algorithms", 4);
         c1.setSchedule(new ArrayList<>(List.of(new ClassSchedule("Monday", "11:00", "13:00"))));
+        c1.setAvailableSeats(10);
         c1 = courseRepository.save(c1);
 
         course.setSchedule(new ArrayList<>(List.of(new ClassSchedule("Monday", "10:00", "12:00"))));
