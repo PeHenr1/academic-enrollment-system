@@ -19,10 +19,10 @@ public class EnrollmentController {
     private final EnrollStudentService enrollStudentService;
     private final StudentRepository studentRepository;
 
-    @PostMapping("/enroll/{studentId}/{courseCode}")
+    @PostMapping("/enroll/{studentId}")
     public ResponseEntity<String> enrollStudent(
             @PathVariable String studentId,
-            @PathVariable String courseCode) {
+            @RequestBody List<String> courseCodes) {
 
         try {
             Student student = studentRepository.findById(studentId)
@@ -30,9 +30,9 @@ public class EnrollmentController {
 
             Term term = Term.current();
 
-            enrollStudentService.enroll(student, List.of(courseCode), term);
+            enrollStudentService.enroll(student, courseCodes, term);
 
-            return ResponseEntity.ok("Student successfully enrolled in course " + courseCode);
+            return ResponseEntity.ok("Student successfully enrolled in " + courseCodes.size() + " course(s).");
 
         } catch (BusinessRuleException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
