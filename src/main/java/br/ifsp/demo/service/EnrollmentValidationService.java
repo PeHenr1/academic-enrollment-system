@@ -16,7 +16,9 @@ public class EnrollmentValidationService {
     private static final int MAX_CREDITS_PER_TERM = 20;
 
     public void validateCourseExists(Course course) {
-        if (course == null) throw new BusinessRuleException("Course not found");
+        if (course == null) {
+            throw new BusinessRuleException("Course not found");
+        }
         if (course.getCode() == null || course.getCode().isBlank()) {
             throw new BusinessRuleException("Course code is missing or blank");
         }
