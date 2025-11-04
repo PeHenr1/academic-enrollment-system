@@ -1,8 +1,10 @@
 package br.ifsp.demo.controller;
 
+import br.ifsp.demo.domain.Enrollment;
+import br.ifsp.demo.domain.Term;
 import br.ifsp.demo.exception.EnrollmentNotFoundException;
 import br.ifsp.demo.exception.NoCoursesFoundException;
-import br.ifsp.demo.domain.Course;
+import br.ifsp.demo.security.auth.AuthenticationInfoService;
 import br.ifsp.demo.service.EnrollmentQueryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +18,21 @@ import java.util.List;
 public class EnrollmentQueryController {
 
     private final EnrollmentQueryService queryService;
+    private final AuthenticationInfoService authService;
 
-    @GetMapping("/{id}/courses")
-    public ResponseEntity<?> getCoursesByEnrollment(@PathVariable("id") Long enrollmentId) {
+     @GetMapping("/my-courses")
+    public ResponseEntity<?> getMyEnrollments() {
         try {
-            List<Course> courses = queryService.getCoursesByEnrollment(enrollmentId);
-            return ResponseEntity.ok(courses);
+            String studentId = authService.getAuthenticatedStudentId();
+            Term currentTerm = Term.current();
 
-        } catch (EnrollmentNotFoundException ex) {
-            return ResponseEntity.status(400).body(ex.getMessage());
+            List<Enrollment> enrollments = queryService.getEnrollmentsByStudent(studentId, currentTerm);
+
+
+            return ResponseEntity.ok(enrollments);
 
         } catch (NoCoursesFoundException ex) {
-            return ResponseEntity.status(200).body(ex.getMessage());
-
+            return ResponseEntity.ok(List.of());
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Erro interno no servidor: " + ex.getMessage());
         }
