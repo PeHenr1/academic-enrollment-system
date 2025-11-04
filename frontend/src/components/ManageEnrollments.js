@@ -92,7 +92,7 @@ const ManageEnrollments = () => {
                       onClick={() => handleCancel(enrollment.id)}
                       className="danger-button"
                     >
-                      Cancelar
+                       Cancelar
                     </button>
                   )}
                 </td>
