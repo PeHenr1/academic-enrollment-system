@@ -325,4 +325,20 @@ class EnrollmentValidationServiceStructuralTest {
         assertThatCode(() -> service.validateScheduleConflict(course, Collections.emptyList()))
                 .doesNotThrowAnyException();
     }
+
+    @Test
+    void validateCourseExists_AllBranches() {
+        assertThatThrownBy(() -> service.validateCourseExists(null))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course not found");
+
+        Course blankCourse = TestUtils.createCourse("", "Test", 4);
+        assertThatThrownBy(() -> service.validateCourseExists(blankCourse))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Course code is missing or blank");
+
+        Course valid = TestUtils.createCourse("IFSP101", "Test", 4);
+        assertThatCode(() -> service.validateCourseExists(valid))
+                .doesNotThrowAnyException();
+    }
 }
