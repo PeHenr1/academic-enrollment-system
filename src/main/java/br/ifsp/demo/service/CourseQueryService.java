@@ -3,6 +3,7 @@ package br.ifsp.demo.service;
 import br.ifsp.demo.domain.Course;
 import br.ifsp.demo.repository.CourseRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,22 +16,21 @@ public class CourseQueryService {
         this.repository = repository;
     }
 
+    @Transactional(readOnly = false)
     public List<Course> getCourses() {
-        List<Course> courses = repository.findCourses();
+        List<Course> courses = repository.findCoursesByFilter(null, null);
 
         if (courses == null) {
             throw new IllegalStateException("Failed to load offered courses");
         }
-
-        return courses.stream().toList();
+        return courses;
     }
 
+    @Transactional(readOnly = false)
     public List<Course> getCoursesByFilter(String courseName, String shift) {
-        List<Course> allCourses = getCourses();
+        String nameFilter = (courseName == null || courseName.isBlank()) ? null : courseName;
+        String shiftFilter = (shift == null || shift.isBlank()) ? null : shift;
 
-        return allCourses.stream()
-                .filter(c -> courseName == null || courseName.equalsIgnoreCase(c.getName()))
-                .filter(c -> shift == null || shift.equalsIgnoreCase(c.getShift()))
-                .toList();
+        return repository.findCoursesByFilter(nameFilter, shiftFilter);
     }
 }

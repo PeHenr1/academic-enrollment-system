@@ -6,12 +6,14 @@ import br.ifsp.demo.exception.NoCoursesFoundException;
 import br.ifsp.demo.repository.CourseRepository;
 import br.ifsp.demo.repository.EnrollmentRepository;
 import br.ifsp.demo.repository.StudentRepository;
+import br.ifsp.demo.util.TestUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,72 +27,63 @@ class EnrollmentQueryServiceTest {
     private CourseRepository courseRepository;
     private EnrollmentQueryService service;
 
+    private final String studentId = "SP123";
+    private final Term term = Term.current();
+    private Enrollment mockEnrollment1;
+    private Enrollment mockEnrollment2;
+
     @BeforeEach
     void setup() {
         enrollmentRepository = mock(EnrollmentRepository.class);
         courseRepository = mock(CourseRepository.class);
         service = new EnrollmentQueryService(enrollmentRepository, courseRepository);
+
+        mockEnrollment1 = mock(Enrollment.class);
+        mockEnrollment2 = mock(Enrollment.class);
     }
 
     @Test
-    @DisplayName("Should Return Courses for Enrollment")
-    void shouldReturnCoursesForEnrollment() {
-        Long enrollmentId = 1L;
-        Course math = new Course("MAT", "Math", 4);
-        Course physics = new Course("PHY", "Physics", 3);
+    @DisplayName("Should Return Enrollments for Student")
+    void shouldReturnEnrollmentsForStudent() {
+        when(enrollmentRepository.findEnrollmentsByStudentAndTerm(studentId, term))
+                .thenReturn(List.of(mockEnrollment1, mockEnrollment2));
 
-        math.setSchedule(List.of(new ClassSchedule("Monday", "08:00", "10:00")));
-        math.setAvailableSeats(30);
+        List<Enrollment> result = service.getEnrollmentsByStudent(studentId, term);
 
-        physics.setSchedule(List.of(new ClassSchedule("Monday", "10:00", "12:00")));
-        physics.setAvailableSeats(40);
-
-
-        when(enrollmentRepository.existsById(enrollmentId)).thenReturn(true);
-        when(courseRepository.findByEnrollmentId(enrollmentId)).thenReturn(List.of(math, physics));
-
-        List<Course> result = service.getCoursesByEnrollment(enrollmentId);
-
-        assertThat(result).hasSize(2)
-                .extracting(Course::getName)
-                .containsExactlyInAnyOrder("Math", "Physics");
-
-        verify(enrollmentRepository).existsById(enrollmentId);
-        verify(courseRepository).findByEnrollmentId(enrollmentId);
+        assertThat(result).hasSize(2);
+        verify(enrollmentRepository).findEnrollmentsByStudentAndTerm(studentId, term);
+        verifyNoInteractions(courseRepository);
     }
 
     @Test
-    @DisplayName("Should Throw NoCoursesFoundException When No Courses")
+    @DisplayName("Should Throw NoCoursesFoundException When No Enrollments")
     void shouldThrowNoCoursesFoundException() {
-        Long enrollmentId = 2L;
-        when(enrollmentRepository.existsById(enrollmentId)).thenReturn(true);
-        when(courseRepository.findByEnrollmentId(enrollmentId)).thenReturn(List.of());
+        when(enrollmentRepository.findEnrollmentsByStudentAndTerm(studentId, term))
+                .thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
+        assertThatThrownBy(() -> service.getEnrollmentsByStudent(studentId, term))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("No courses found for this enrollment");
+                .hasMessage("No enrollments found for this student this term.");
     }
 
     @Test
-    @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
-    void shouldThrowEnrollmentNotFoundException() {
-        Long enrollmentId = 999L;
-        when(enrollmentRepository.existsById(enrollmentId)).thenReturn(false);
-
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentId))
-                .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Enrollment not found or inactive");
-    }
-
-    @Test
-    @DisplayName("Should Reject When Enrollment ID Is Null")
-    void shouldRejectWhenEnrollmentIdIsNull() {
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
+    @DisplayName("Should Throw IllegalArgumentException When Student ID Is Null")
+    void shouldThrowIllegalArgumentExceptionWhenStudentIdIsNull() {
+        assertThatThrownBy(() -> service.getEnrollmentsByStudent(null, term))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("ID cannot be null");
+                .hasMessage("Student ID and Term cannot be null");
 
         verifyNoInteractions(enrollmentRepository);
-        verifyNoInteractions(courseRepository);
+    }
+
+    @Test
+    @DisplayName("Should Throw IllegalArgumentException When Term Is Null")
+    void shouldThrowIllegalArgumentExceptionWhenTermIsNull() {
+        assertThatThrownBy(() -> service.getEnrollmentsByStudent(studentId, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Student ID and Term cannot be null");
+
+        verifyNoInteractions(enrollmentRepository);
     }
 }
 
@@ -112,8 +105,9 @@ class EnrollmentQueryServiceFunctionalTest {
     private EnrollmentQueryService service;
 
     private Student student;
-    private Enrollment enrollment;
-    private Course initialCourse;
+    private Course math;
+    private Course physics;
+    private Term term;
 
     @BeforeEach
     void setup() {
@@ -121,81 +115,41 @@ class EnrollmentQueryServiceFunctionalTest {
         courseRepository.deleteAll();
         studentRepository.deleteAll();
 
-        student = studentRepository.save(new Student("123", "John Doe"));
+        student = studentRepository.save(TestUtils.createDefaultStudent());
+        term = Term.current();
 
-        initialCourse = new Course("INIT", "Initial Course", 1);
-        initialCourse.setAvailableSeats(1);
-        initialCourse.setSchedule(List.of(new ClassSchedule("Monday", "08:00", "09:00")));
-        initialCourse = courseRepository.save(initialCourse);
+        math = TestUtils.createCourse("MAT", "Math", 4);
+        math.setAvailableSeats(30);
+        math.setSchedule(List.of(new ClassSchedule("Monday", "09:00", "11:00")));
+        math = courseRepository.save(math);
 
-        enrollment = enrollmentRepository.save(new Enrollment(student, initialCourse, Term.current()));
+        physics = TestUtils.createCourse("PHY", "Physics", 3);
+        physics.setAvailableSeats(30);
+        physics.setSchedule(List.of(new ClassSchedule("Tuesday", "09:00", "11:00")));
+        physics = courseRepository.save(physics);
+
+        enrollmentRepository.save(new Enrollment(student, math, term));
+        enrollmentRepository.save(new Enrollment(student, physics, term));
     }
 
     @Test
-    @Tag("Functional")
-    @DisplayName("Should Return Multiple Courses for Enrollment")
-    void shouldReturnMultipleCourses() {
-        Course math = new Course("MAT", "Math", 4);
-        math.setSchedule(List.of(new ClassSchedule("Monday", "09:00", "11:00")));
-        math.setAvailableSeats(30);
-        math.setEnrollment(enrollment);
-
-        Course physics = new Course("PHY", "Physics", 3);
-        physics.setSchedule(List.of(new ClassSchedule("Monday", "11:00", "13:00")));
-        physics.setAvailableSeats(40);
-        physics.setEnrollment(enrollment);
-
-        courseRepository.saveAll(List.of(math, physics));
-
-        List<Course> result = service.getCoursesByEnrollment(enrollment.getId());
+    @DisplayName("Should Return All Enrollments for Student")
+    void shouldReturnAllEnrollmentsForStudent() {
+        List<Enrollment> result = service.getEnrollmentsByStudent(student.getId(), term);
 
         assertThat(result)
-                .hasSize(2)
-                .extracting(Course::getName)
-                .containsExactlyInAnyOrder("Math", "Physics");
+                .hasSize(2);
+        assertThat(result.get(0).getCourse().getCode()).isEqualTo("MAT");
+        assertThat(result.get(1).getCourse().getCode()).isEqualTo("PHY");
     }
 
     @Test
-    @Tag("Functional")
-    @DisplayName("Should Throw NoCoursesFoundException When Enrollment Has No Courses")
+    @DisplayName("Should Throw NoCoursesFoundException for Student with No Enrollments")
     void shouldThrowNoCoursesFoundException() {
-        Student testStudent = new Student("NOCOURSES", "Student Without Courses");
-        testStudent = studentRepository.save(testStudent);
+        Student student2 = studentRepository.save(TestUtils.createStudent("student2", "Student 2"));
 
-        Course tempCourse = new Course("TEMP", "Temporary Course", 1);
-        tempCourse.setAvailableSeats(1);
-        tempCourse = courseRepository.save(tempCourse);
-
-        Enrollment enrollmentWithNoCourses = enrollmentRepository.save(
-                new Enrollment(testStudent, tempCourse, Term.current())
-        );
-
-        tempCourse.setEnrollment(null);
-        courseRepository.save(tempCourse);
-
-        List<Course> coursesForEnrollment = courseRepository.findByEnrollmentId(enrollmentWithNoCourses.getId());
-        assertThat(coursesForEnrollment).isEmpty();
-
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(enrollmentWithNoCourses.getId()))
+        assertThatThrownBy(() -> service.getEnrollmentsByStudent(student2.getId(), term))
                 .isInstanceOf(NoCoursesFoundException.class)
-                .hasMessage("No courses found for this enrollment");
-    }
-
-    @Test
-    @Tag("Functional")
-    @DisplayName("Should Throw EnrollmentNotFoundException When Enrollment Does Not Exist")
-    void shouldThrowEnrollmentNotFoundException() {
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(999L))
-                .isInstanceOf(EnrollmentNotFoundException.class)
-                .hasMessage("Enrollment not found or inactive");
-    }
-
-    @Test
-    @Tag("Functional")
-    @DisplayName("Should Reject When Enrollment Is Null or Not Found")
-    void shouldRejectWhenEnrollmentIsNullOrNotFound() {
-        assertThatThrownBy(() -> service.getCoursesByEnrollment(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("ID cannot be null");
+                .hasMessage("No enrollments found for this student this term.");
     }
 }

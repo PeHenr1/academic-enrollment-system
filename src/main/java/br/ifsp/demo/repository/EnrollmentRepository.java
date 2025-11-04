@@ -13,13 +13,17 @@ import java.util.List;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
-    @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId AND e.term.year = :#{#term.year} AND e.term.semester = :#{#term.semester}")
+    @Query("SELECT e FROM Enrollment e WHERE e.student.id = :studentId " +
+            "AND e.term.year = :#{#term.year} AND e.term.semester = :#{#term.semester} " +
+            "AND e.canceled = false")
     List<Enrollment> findEnrollmentsByStudentAndTerm(String studentId, Term term);
 
     default void saveEnrollment(Student student, Course course, Term term) {
         save(new Enrollment(student, course, term));
     }
 
-    @Query("SELECT SUM(e.course.credits) FROM Enrollment e WHERE e.student.id = :studentId AND e.term.year = :#{#term.year} AND e.term.semester = :#{#term.semester}")
+    @Query("SELECT SUM(e.course.credits) FROM Enrollment e WHERE e.student.id = :studentId " +
+            "AND e.term.year = :#{#term.year} AND e.term.semester = :#{#term.semester} " +
+            "AND e.canceled = false")
     Integer calculateTotalCredits(String studentId, Term term);
 }
