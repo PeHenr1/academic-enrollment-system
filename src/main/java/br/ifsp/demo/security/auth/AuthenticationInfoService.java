@@ -8,11 +8,24 @@ import java.util.UUID;
 
 @Service
 public class AuthenticationInfoService {
-    public UUID getAuthenticatedUserId() {
+
+   private User getAuthenticatedUserPrincipal() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated())
+        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof User)) {
             throw new IllegalStateException("Unauthorized user request.");
-        var applicationUser = (User) authentication.getPrincipal();
-        return applicationUser.getId();
+        }
+        return (User) authentication.getPrincipal();
+    }
+
+    public UUID getAuthenticatedUserId() {
+        return getAuthenticatedUserPrincipal().getId();
+    }
+
+    public String getAuthenticatedStudentId() {
+        User user = getAuthenticatedUserPrincipal();
+        if (user.getStudent() == null) {
+            throw new IllegalStateException("Authenticated user is not linked to a student.");
+        }
+        return user.getStudent().getId();
     }
 }
