@@ -6,7 +6,6 @@ const PrivateRoute = ({ children }) => {
   const { token } = useAuth();
 
   if (!token) {
-    // Redireciona para o login se não estiver autenticado
     return <Navigate to="/login" replace />;
   }
 

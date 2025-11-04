@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react'; // <-- Importar useEffect
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
 const ManageEnrollments = () => {
-  // O estado agora é para a LISTA de matrículas
   const [myEnrollments, setMyEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  /**
-   * Helper para extrair a mensagem de erro da resposta da API
-   */
   const getErrorMessage = (err, defaultMessage) => {
     if (err.response && err.response.data) {
       if (typeof err.response.data === 'object' && err.response.data.message) {
@@ -23,8 +19,6 @@ const ManageEnrollments = () => {
     return defaultMessage;
   };
 
-  // --- NOVA FUNÇÃO ---
-  // Busca as matrículas do aluno logado
   const fetchMyEnrollments = async () => {
     setLoading(true);
     setMessage('');
@@ -42,25 +36,21 @@ const ManageEnrollments = () => {
     }
   };
 
-  // --- RODA A FUNÇÃO QUANDO O COMPONENTE CARREGA ---
   useEffect(() => {
     fetchMyEnrollments();
-  }, []); // O array vazio [] faz rodar só uma vez
+  }, []);
 
-  // --- FUNÇÃO DE CANCELAR ATUALIZADA ---
   const handleCancel = async (enrollmentId) => {
     setMessage('');
     setError('');
 
-    // Confirmação com o usuário
     if (!window.confirm("Você tem certeza que quer cancelar esta matrícula?")) {
       return;
     }
 
     try {
       const response = await api.delete(`/api/v1/enrollments/${enrollmentId}/cancel`);
-      setMessage(response.data); // "Enrollment successfully canceled."
-      // Atualiza a lista de matrículas após o cancelamento
+      setMessage(response.data);
       fetchMyEnrollments();
     } catch (err) {
       setError(getErrorMessage(err, 'Erro ao cancelar matrícula.'));
@@ -71,8 +61,6 @@ const ManageEnrollments = () => {
     <div className="module-container">
       {message && <p className="success">{message}</p>}
       {error && <p className="error">{error}</p>}
-
-      {/* Card "Gerenciar por ID" foi removido */}
 
       <h3>Minhas Matrículas (Semestre Atual)</h3>
 

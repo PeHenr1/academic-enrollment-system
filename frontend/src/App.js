@@ -12,11 +12,9 @@ function App() {
     <div className="container">
       <Navigation />
       <Routes>
-        {/* Rotas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Rotas Privadas */}
         <Route
           path="/"
           element={
@@ -42,7 +40,6 @@ function App() {
           }
         />
 
-        {/* Rota Padrão (cai no login se não estiver logado, ou /courses se estiver) */}
         <Route path="*" element={<Login />} />
       </Routes>
     </div>

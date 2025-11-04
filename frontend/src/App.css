@@ -1,4 +1,3 @@
-/* --- Variáveis de Cor e Tema --- */
 :root {
   --color-primary: #005A9C;
   --color-primary-dark: #003E6B;
@@ -43,7 +42,6 @@ h2, h3 {
   margin-top: 0;
 }
 
-/* --- Navegação --- */
 .navbar {
   display: flex;
   gap: 20px;
@@ -80,7 +78,6 @@ h2, h3 {
   background-color: var(--color-danger-dark);
 }
 
-/* --- Containers de Módulo (Telas de Cursos/Matrículas) --- */
 .module-container {
   background-color: var(--color-bg-card);
   border-radius: var(--border-radius);
@@ -94,7 +91,6 @@ h2, h3 {
   box-shadow: var(--box-shadow-hover);
 }
 
-/* --- Cards de Formulário (Base) --- */
 .form-container {
   background-color: var(--color-bg-card);
   border-radius: var(--border-radius);
@@ -103,28 +99,26 @@ h2, h3 {
   margin-bottom: 30px;
   transition: box-shadow 0.3s ease;
   overflow: hidden;
-  box-sizing: border-box; /* Garante que o padding não estoure */
+  box-sizing: border-box;
 }
 .form-container:hover {
   box-shadow: var(--box-shadow-hover);
 }
 
-/* --- ESTILOS DE LOGIN/REGISTRO (Alta Especifidade) --- */
 .form-container.login-register {
   max-width: 450px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 40px;
 }
-/* A tag <form> DENTRO de .login-register deve ser vertical */
 .form-container.login-register form {
   display: flex;
-  flex-direction: column; /* Faz o form empilhar seus filhos (as divs) */
+  flex-direction: column;
   gap: 0;
 }
 .form-container.login-register form div {
   display: flex;
-  flex-direction: column; /* Faz label/input empilharem */
+  flex-direction: column;
   margin-bottom: 15px;
 }
 .form-container.login-register label {
@@ -135,12 +129,12 @@ h2, h3 {
 }
 .form-container.login-register input[type="text"],
 .form-container.login-register input[type="password"] {
-  width: 100%; /* Ocupa 100% da largura do card */
+  width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  box-sizing: border-box; /* Importante para o width 100% funcionar */
+  box-sizing: border-box;
 }
 .form-container.login-register button[type="submit"] {
   width: 100%;
@@ -159,18 +153,15 @@ h2, h3 {
   text-decoration: underline;
 }
 
-
-/* --- ESTILOS DE FORMULÁRIOS DE GERENCIAMENTO (Ex: "Minhas Matrículas") --- */
-/* Usamos :not() para aplicar isso a todos os .form-container que NÃO são .login-register */
 .form-container:not(.login-register) form {
   display: flex;
-  flex-direction: row; /* Deixa lado a lado */
+  flex-direction: row;
   gap: 10px;
   align-items: center;
 }
 .form-container:not(.login-register) form input {
-  flex-grow: 1; /* Input ocupa o espaço restante */
-  width: auto; /* Reseta a largura */
+  flex-grow: 1;
+  width: auto;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -183,8 +174,6 @@ h2, h3 {
   box-shadow: 0 0 0 3px rgba(0, 90, 156, 0.15);
 }
 
-
-/* --- Filtro de Cursos --- */
 .filter-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -193,15 +182,14 @@ h2, h3 {
   align-items: end;
 }
 .filter-form input {
-  width: 100%; /* Ocupa 100% da coluna do grid */
+  width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  box-sizing: border-box; /* Importante */
+  box-sizing: border-box;
 }
 
-/* --- Botões --- */
 button {
   padding: 12px 20px;
   background-color: var(--color-primary);
@@ -212,7 +200,7 @@ button {
   font-size: 16px;
   font-weight: 600;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  box-sizing: border-box; /* Garante padding consistente */
+  box-sizing: border-box;
 }
 button:hover {
   background-color: var(--color-primary-dark);
@@ -229,7 +217,6 @@ button:active {
   background-color: var(--color-danger-dark);
 }
 
-/* --- Tabelas --- */
 .course-table {
   width: 100%;
   border-collapse: collapse;
@@ -258,7 +245,6 @@ button:active {
   background-color: #fdfdfd;
 }
 
-/* --- Mensagens de Alerta (Para o "erro estranho") --- */
 .error, .success {
   padding: 15px;
   margin-bottom: 20px;
@@ -277,7 +263,6 @@ button:active {
   border: 1px solid #c5e1c5;
 }
 
-/* --- Estilo para o Footer do Carrinho --- */
 .enrollment-footer {
   margin-top: 25px;
   padding-top: 20px;

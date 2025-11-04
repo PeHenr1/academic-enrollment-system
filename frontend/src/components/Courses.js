@@ -127,7 +127,6 @@ const Courses = () => {
                   type="checkbox"
                   checked={selectedCourses.has(course.code)}
                   onChange={() => handleSelectCourse(course.code)}
-                  // --- A PROPRIEDADE 'disabled' FOI REMOVIDA ---
                 />
               </td>
               <td>{course.code}</td>

@@ -8,7 +8,7 @@ const Register = () => {
   const [studentId, setStudentId] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState(''); // <-- 1. CAMPO ADICIONADO
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -32,12 +32,10 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
-    // --- 2. VALIDAÇÃO DE SENHA ADICIONADA ---
     if (password !== passwordConfirm) {
       setError('As senhas não conferem.');
       return;
     }
-    // --- FIM DA VALIDAÇÃO ---
 
     const userData = {
       name,
@@ -50,19 +48,16 @@ const Register = () => {
     try {
       const success = await register(userData);
       if (success) {
-        navigate('/login'); // Redireciona para o login após o registro
+        navigate('/login');
       } else {
-        // Erro genérico se o contexto não der detalhes
         setError('Erro ao tentar registrar. Verifique os dados.');
       }
     } catch (err) {
-      // Pega erros da API (ex: Email ou RA já existem)
       setError(getErrorMessage(err, 'Erro ao registrar. Tente novamente.'));
     }
   };
 
   return (
-    // --- 3. LAYOUT ATUALIZADO PARA VERTICAL ---
     <div className="form-container login-register">
       <h2>Registro</h2>
       <form onSubmit={handleSubmit}>
